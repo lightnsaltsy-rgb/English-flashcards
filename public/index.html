@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>영어회화 연습</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="theme-color" content="#3b6ef5">
+<script>try{var t=localStorage.getItem("srs-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="영어회화">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--fg:#1f2328;--mut:#6b7280;--bd:#e3e1da;--ac:#3b6ef5;--r1:#e5484d;--r2:#e08a1e;--r3:#2f9e5b;--r4:#3b6ef5;--gray:#e6e5e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#111;--fg:#fff;--mut:#b4b4b4;--bd:#3a3a3a;--ac:#7aa2ff;--gray:#262626;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--card:#111;--fg:#fff;--mut:#b4b4b4;--bd:#3a3a3a;--ac:#7aa2ff;--gray:#262626;color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 14px;text-align:center}
+nav{display:flex;gap:6px;margin-bottom:16px}
+nav button{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;font:inherit;cursor:pointer}
+nav button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px}
+.pk{border:1px solid var(--bd);background:var(--bg);color:var(--mut);border-radius:50%;width:32px;height:32px;cursor:pointer;flex:none}.pk.on{border-color:var(--ac);background:var(--ac)}
+#sync{font-size:12px;color:var(--mut);text-align:right;margin:-6px 0 12px;cursor:pointer}
+.sec{font-size:12px;font-weight:600;color:var(--mut);margin:14px 0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.chip{padding:5px 11px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:16px;font:inherit;font-size:13px;cursor:pointer}.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.mini{padding:3px 8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:6px;font:inherit;font-size:12px;cursor:pointer}
+.go{padding:8px 12px;border:0;border-radius:8px;background:var(--ac);color:#fff;font:inherit;font-size:14px;cursor:pointer}
+.seg{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.seg button{flex:1;padding:8px;border:0;background:var(--card);color:var(--fg);font:inherit;font-size:14px;cursor:pointer}.seg button.on{background:var(--ac);color:#fff}
+.stage{display:flex;flex-direction:column;height:min(50vh,380px)}
+.stage .face{flex:1;min-height:0;overflow:auto;justify-content:safe center;align-items:safe center}
+.act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.act button{padding:16px 4px;border:0;border-radius:10px;color:#fff;font:inherit;font-size:16px;cursor:pointer}
+.ed{min-height:90px;max-height:240px;overflow:auto;padding:10px;margin:4px 0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);white-space:pre-wrap;font-size:16px;line-height:1.5;outline:none}
+.ed font[size="1"]{font-size:12px}.ed font[size="2"]{font-size:14px}.ed font[size="3"]{font-size:16px}.ed font[size="4"]{font-size:19px}.ed font[size="5"]{font-size:23px}
+.opt{display:flex;gap:8px}.opt div{flex:1}.opt label{display:block;font-size:12px}
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stats div{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;text-align:center;font-size:13px;color:var(--mut)}
+.stats b{display:block;font-size:20px;color:var(--fg)}
+.face{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:22px;white-space:pre-wrap;padding:8px}
+.back{border-top:1px dashed var(--bd);color:var(--ac)}
+.row{display:flex;gap:8px;margin-top:12px}
+.row button{flex:1;padding:12px 4px;border:0;border-radius:10px;color:#fff;font:inherit;cursor:pointer}
+.row small{display:block;opacity:.85;font-size:11px}
+.b1{background:var(--r1)}.b2{background:var(--r2)}.b3{background:var(--r3)}.b4{background:var(--r4)}
+.big{width:100%;padding:14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font:inherit;cursor:pointer}
+input,textarea,select{width:100%;padding:10px;margin:4px 0 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+label{font-size:13px;color:var(--mut)}
+.item{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}
+.item div{flex:1;min-width:0}.item span{color:var(--mut);font-size:12px}
+.item p{margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.x{background:none;border:0;color:var(--r1);cursor:pointer;font-size:18px}
+.sm{padding:8px 12px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:8px;font:inherit;cursor:pointer;margin-right:6px}
+.empty{text-align:center;color:var(--mut);padding:30px 0}
+input.ck{width:22px;height:22px;margin:0;padding:0;flex:none;accent-color:var(--ac);cursor:pointer}
+.item .no{font-size:14px;color:var(--fg);min-width:26px;text-align:right;flex:none}
+.ctl{display:flex;gap:6px;align-items:center;flex:1 1 100%}
+.ctl select{width:auto;flex:1;min-width:0;margin:0;padding:8px 4px;font-size:14px}
+.act3{grid-template-columns:1fr 1fr 1fr}.act .wide{grid-column:1/-1}
+.ed:empty:before{content:attr(data-ph);color:var(--mut);pointer-events:none}
+.mini.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dbox{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:14px;padding:18px;width:100%;max-width:380px}
+.mini-sel{width:auto;margin:0;padding:3px 6px;font-size:12px;border-radius:6px}
+main.wide{max-width:960px}
+.cols{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:0}.cols>*{min-width:0}
+@media (max-width:520px){.cols{grid-template-columns:1fr}.cl-h{order:0}.cl{order:1}.cr-h{order:2}.cr{order:3}}
+.item.ph{border-bottom-color:transparent}
+.item .sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note{border:1px solid var(--ac);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fbar{background:var(--gray);border:1px solid var(--bd);border-bottom:3px solid var(--mut);border-radius:10px 10px 0 0;padding:10px 10px 4px}
+.fbar .chips{margin:0}
+.fopen{border:1px solid var(--bd);border-top:0;border-radius:0 0 10px 10px;padding:14px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<main>
+<div style="position:relative"><h1>영어회화 연습</h1><button id="theme" class="mini" style="position:absolute;right:0;top:50%;transform:translateY(-50%)" onclick="toggleTheme()"></button></div>
+<nav id="nav"></nav>
+<div id="sync" onclick="openSync()"></div>
+<div id="view"></div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const XF="잊음",LF="학습중",PL="선택카드학습중",ALL="전체학습",LIST="__list",ALLV="__allv",KEY="srs-cards-v1",MIN=60000,DAY=86400000;
+let cards=[],tab="study",queue=[],shown=false,ses=null,eid=null,cur=null,xid=null,openT=false,openS=false,side=true,openL=false;
+let S={order:"random",limit:0,dir:"all",skipO:false,day:"",seen:[],pick:[],dead:{},upd:0,rev:true};
+try{cards=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){cards=[]}
+try{S={...S,...JSON.parse(localStorage.getItem(KEY+"-s")||"{}")}}catch(e){}
+const today=()=>new Date().toDateString();
+if(S.day!==today()){S.day=today();S.seen=[];S.pick=[]}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(cards));localStorage.setItem(KEY+"-s",JSON.stringify(S))}catch(e){}}
+function save(){S.upd=Date.now();persist();schedSync()}
+let code=null,key=null,busy=false,again=false,tm=0;
+const setStat=t=>{const e=document.querySelector("#sync");if(e)e.textContent=t};
+async function hash(x){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("srs:"+x));return[...new Uint8Array(b)].map(v=>v.toString(16).padStart(2,"0")).join("")}
+function mergeState(a,b){
+  const m=new Map();
+  for(const c of[...a.cards,...b.cards]){const l=m.get(c.id);if(!l||(c.upd||0)>(l.upd||0))m.set(c.id,c)}
+  const dead={...(a.S.dead||{})};for(const k in (b.S.dead||{}))dead[k]=Math.max(dead[k]||0,b.S.dead[k]);
+  for(const k in dead){const c=m.get(Number(k));if(c&&(c.upd||0)<dead[k])m.delete(Number(k))}
+  const S=(b.S.upd||0)>(a.S.upd||0)?{...b.S}:{...a.S};S.dead=dead;
+  return{cards:[...m.values()].sort((x,y)=>x.id-y.id),S}
+}
+const sig=()=>cards.length+"|"+cards.reduce((n,c)=>n+(c.upd||0),0)+"|"+S.upd;
+async function initSync(){
+  if(location.protocol==="file:"){setStat("💻 로컬 테스트 모드 · 동기화는 Netlify에 올린 뒤 켜져요");return}
+  let c=localStorage.getItem("srs-code");
+  if(!c){
+    c=(prompt("동기화 코드를 입력하세요.\n이미 다른 기기에서 쓰고 있다면 그 코드를, 처음이라면 비워두고 확인을 누르세요.")||"").trim();
+    if(!c){c=Array.from(crypto.getRandomValues(new Uint8Array(20)),x=>"abcdefghjkmnpqrstuvwxyz23456789"[x%31]).join("");alert("새 동기화 코드: "+c+"\n\n다른 기기에서는 처음 실행할 때 이 코드를 입력하세요. (나중에 화면 위 ☁️ 줄을 눌러도 볼 수 있어요)")}
+    localStorage.setItem("srs-code",c)
+  }
+  code=c;key=await hash(c);sync(true)
+}
+function openSync(){
+  const c=(prompt("동기화 코드입니다. 다른 기기에서 같은 코드를 입력하면 카드가 동기화돼요.\n(다른 코드로 바꾸려면 새 코드를 입력하세요)",code||"")||"").trim();
+  if(c&&c!==code){code=c;localStorage.setItem("srs-code",c);hash(c).then(k=>{key=k;sync(true)})}else sync(true)
+}
+function schedSync(){if(!key)return;clearTimeout(tm);tm=setTimeout(()=>sync(false),1200)}
+async function sync(ui){
+  if(!key)return;
+  if(busy){again=true;return}
+  busy=true;setStat("☁️ 동기화 중…");
+  try{
+    const before=sig();
+    const r=await fetch("/api/sync",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({k:key,cards,S})});
+    if(!r.ok)throw new Error(r.status);
+    const res=mergeState({cards,S},await r.json());
+    cards=res.cards;S=res.S;const ids=new Set(cards.map(c=>c.id));queue=queue.filter(id=>ids.has(id));persist();
+    setStat("☁️ 동기화됨 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})+" · 눌러서 코드 확인");
+    if(ui&&sig()!==before&&!ses&&eid===null)render()
+  }catch(e){setStat("☁️ 오프라인 · 연결되면 자동으로 동기화돼요")}
+  busy=false;if(again){again=false;schedSync()}
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync(true)});
+addEventListener("online",()=>sync(true));
+document.addEventListener("selectionchange",updSz);
+document.addEventListener("keydown",e=>{
+  if(!ses||eid!==null||tab!=="study"||e.ctrlKey||e.metaKey||e.altKey)return;
+  const t=e.target;if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(t.tagName)))return;
+  const k=e.key,ok=k===" "||k==="Enter"||k==="ArrowRight";
+  if(!cards.some(x=>x.id===queue[0]))return;
+  if(!shown){if(ok){e.preventDefault();shown=true;render()}return}
+  if(ses.view){if(ok){e.preventDefault();nxt()}return}
+  if(k==="1"){e.preventDefault();mark(true)}else if(k==="2"){e.preventDefault();mark(false)}else if(ses.pl&&(ok||k==="3")){e.preventDefault();nxt()}
+});
+setInterval(()=>{if(!document.hidden)sync(true)},20000);
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fd=c=>(c.deck===XF||c.deck===LF)?(c.home||"기본"):c.deck;
+const folders=()=>{
+  const k=new Map(),put=(n,t)=>{if(!n||n===XF||n===LF)return;k.set(n,Math.min(k.has(n)?k.get(n):Infinity,t))};
+  (S.fnames||[]).forEach(n=>put(n,(S.ftime||{})[n]||0));
+  cards.forEach(c=>put(fd(c),c.id));
+  const fo=S.forder||[];return[...k.keys()].sort((a,b)=>{const ia=fo.indexOf(a),ib=fo.indexOf(b);if(ia>=0&&ib>=0)return ia-ib;if(ia>=0)return -1;if(ib>=0)return 1;return k.get(a)-k.get(b)||a.localeCompare(b)})
+};
+function mkF(n){S.fnames=S.fnames||[];S.ftime=S.ftime||{};if(n&&!S.fnames.includes(n)){S.fnames.push(n);S.ftime[n]=Date.now()}}
+const nk=c=>[fd(c),c.front,c.back].map(x=>String(x).replace(/\s+/g," ").trim()).join("\u0001");
+let FL=[],FN=[],FA=[],FK=[],addF=null;
+const hideF=()=>S.hideF||[];
+const chk=()=>folders().filter(f=>!hideF().includes(f));
+const inList=c=>c.deck!==XF&&c.deck!==LF&&chk().includes(c.deck);
+const dirOk=(c,d)=>d==="ko"?isKo(c):d==="en"?!isKo(c):true;
+const op=k=>({order:"random",dir:"all",...((S.opt||{})[k]||{})});
+function setSes(f,v){const k=ses.from,old=ses;S.opt=S.opt||{};const pv=(S.opt[k]||{})[f];S.opt[k]={...(S.opt[k]||{}),[f]:v};start(ses.from,ses.home);if(ses===old){if(pv===undefined)delete S.opt[k][f];else S.opt[k][f]=pv;render()}save()}
+function dirNote(){
+  const d=ses.opt.dir;if(d==="all")return"";
+  const src=srcCards(),hid=src.length-src.filter(c=>dirOk(c,d)).length;
+  return hid>0?`<div class="note">방향 설정(${d==="ko"?"한→영":"영→한"}) 때문에 ${hid}장은 나오지 않아요 <button class="mini" onclick="setSes('dir','all')">전체 방향으로 보기</button></div>`:""
+}
+function sesCtl(){const o=op(ses.from),f=(k,v,a)=>`<select onchange="setSes('${k}',this.value)">${a.map(([x,t])=>`<option value="${x}" ${v===x?"selected":""}>${t}</option>`).join("")}</select>`;return f("order",o.order,[["random","랜덤"],["seq","입력순"]])+f("dir",o.dir,[["all","전체"],["ko","한→영"],["en","영→한"]])}
+function start(name,home){
+  const pk=name==="__pick"||name===LF||name===PL,lp=name===LF||name===PL,o=op(name);
+  let l=pk?cards.filter(c=>S.pick.includes(c.id)):cards.filter(c=>name===LIST?inList(c):name===ALL?(c.deck!==XF&&c.deck!==LF):name===XF?c.deck===XF&&(!home||(c.home||"기본")===home):c.deck===name);
+  l=l.filter(c=>dirOk(c,o.dir));
+  if(!l.length){alert(pk?(S.pick.length?"선택 카드 중 지금 설정한 방향(한→영/영→한)에 맞는 카드가 없어요.":"카드 목록에서 학습할 카드를 먼저 선택해 주세요."):name===LIST?"체크된 폴더에 학습할 카드가 없어요. (폴더 체크와 방향 설정을 확인해 보세요)":name===XF?(cards.some(c=>c.deck===XF)?"잊은 카드 중 지금 설정한 방향에 맞는 카드가 없어요.":"잊은 카드가 아직 없어요."):name===LF?"학습중 폴더가 비어 있어요. 카드 목록에서 카드를 골라 '학습중으로 보내기'를 눌러 주세요.":"학습할 카드가 없어요. (방향 설정을 확인해 보세요)");return}
+  l=o.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5);
+  queue=l.map(c=>c.id);shown=false;eid=null;
+  ses={name:name===LIST?"📋 학습 목록":name===ALL?"📚 전체":name===PL?"📖 선택 카드":name===LF?"📖 학습중":pk?"✅ 선택 카드":name===XF?"❌ 잊음"+(home?" · "+home:""):"📁 "+name,total:queue.length,o:0,x:0,from:name,home,view:name===LF,pl:true,loop:true,round:1,opt:o,done:[],xs:[]};render()
+}
+function go(i){start(FL[i][0],FL[i][1])}
+function srcCards(){
+  const f=ses.from;
+  if(f===ALL)return cards.filter(c=>c.deck!==XF&&c.deck!==LF);
+  if(f===LIST)return cards.filter(inList);
+  if(f===LF||f===PL||f==="__pick")return cards.filter(c=>S.pick.includes(c.id));
+  if(f===XF){const l=cards.filter(c=>c.deck===XF&&(!ses.home||(c.home||"기본")===ses.home));return ses.only?l.filter(c=>ses.only.includes(c.id)):l}
+  return cards.filter(c=>c.deck===f)
+}
+function nxt(){
+  const prev=queue[0];queue.shift();shown=false;eid=null;
+  if(!queue.length&&ses&&ses.loop){
+    let l=srcCards().filter(c=>dirOk(c,ses.opt.dir)&&!ses.done.includes(c.id));
+    if(l.length){queue=(ses.opt.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.round++}
+  }
+  render()
+}
+function endSes(){ses=null;queue=[];eid=null;render()}
+function mark(ok){
+  const c=cards.find(x=>x.id===queue[0]);if(!c)return;
+  if(ok){c.st="o";if(c.deck===XF)c.deck=c.home||"기본"}
+  else{c.st="x";c.home=fd(c);
+    const dup=c.deck!==XF&&cards.find(x=>x!==c&&x.deck===XF&&nk(x)===nk(c));
+    if(dup){ses.xs.push(dup.id);dup.st="x";dup.upd=Date.now();if(S.pick.includes(c.id)&&!S.pick.includes(dup.id))S.pick.push(dup.id);S.pick=S.pick.filter(i=>i!==c.id);S.dead[c.id]=Date.now();cards=cards.filter(x=>x!==c)}
+    else{c.deck=XF;ses.xs.push(c.id)}}
+  c.last=Date.now();c.upd=c.last;ses[ok?"o":"x"]++;ses.done.push(c.id);
+  save();nxt()
+}
+const SZ2N={16:1,19:2,26:4,32:5},N2SZ={1:16,2:19,3:22,4:26,5:32};
+const edHtml=(t,runs)=>(runs||[[t,null]]).map(([x,z])=>{const h=esc(x).replace(/\n/g,"<br>");return z&&SZ2N[z]?`<font size="${SZ2N[z]}">${h}</font>`:h}).join("");
+const richHtml=(t,runs)=>runs?runs.map(([x,z])=>z?`<span style="font-size:${z}px">${esc(x)}</span>`:esc(x)).join(""):esc(t);
+function readRuns(ed){
+  const runs=[],add=(t,z)=>{t=t.replace(/\u00a0/g," ");if(!t)return;const l=runs[runs.length-1];if(l&&l[1]===z)l[0]+=t;else runs.push([t,z])};
+  const szOf=n=>{for(let e=n.parentNode;e&&e!==ed;e=e.parentNode){if(e.tagName==="FONT"&&e.size){const z=N2SZ[e.size];if(z)return z===22?null:z}}return null};
+  const walk=n=>{for(const ch of n.childNodes){
+    if(ch.nodeType===3)add(ch.nodeValue,szOf(ch));
+    else if(ch.nodeName==="BR")add("\n",null);
+    else{const blk=ch.nodeName==="DIV"||ch.nodeName==="P";if(blk&&runs.length&&!/\n$/.test(runs[runs.length-1][0]))add("\n",null);walk(ch)}
+  }};
+  walk(ed);return runs
+}
+function trimRuns(r){
+  r=r.map(x=>[x[0],x[1]]);
+  while(r.length){r[0][0]=r[0][0].replace(/^\s+/,"");if(r[0][0])break;r.shift()}
+  while(r.length){const l=r[r.length-1];l[0]=l[0].replace(/\s+$/,"");if(l[0])break;r.pop()}
+  return r
+}
+const isDark=()=>{const t=document.documentElement.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches};
+function themeBtn(){const b=document.querySelector("#theme");if(b)b.textContent=isDark()?"☀️ 주간":"🌙 야간";const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=isDark()?"#000000":"#3b6ef5"}
+function toggleTheme(){const t=isDark()?"light":"dark";document.documentElement.setAttribute("data-theme",t);try{localStorage.setItem("srs-theme",t)}catch(e){}themeBtn()}
+function szAt(node,root){for(let e=node.nodeType===3?node.parentNode:node;e&&e!==root;e=e.parentNode){if(e.tagName==="FONT"&&e.size)return +e.size}return 3}
+function updSz(){
+  let cur=null;const sel=window.getSelection?getSelection():null;
+  if(sel&&sel.rangeCount){
+    const a=sel.anchorNode,el=a&&(a.nodeType===1?a:a.parentElement),root=el&&el.closest&&el.closest(".ed");
+    if(root){
+      if(sel.isCollapsed)cur=szAt(a,root);
+      else{
+        const r=sel.getRangeAt(0),sizes=new Set(),w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+        for(let n=w.nextNode();n;n=w.nextNode()){
+          if(!r.intersectsNode(n))continue;
+          const st=n===r.startContainer?r.startOffset:0,en=n===r.endContainer?r.endOffset:n.nodeValue.length;
+          if(en>st)sizes.add(szAt(n,root))
+        }
+        if(sizes.size===1)cur=[...sizes][0]
+      }
+    }
+  }
+  document.querySelectorAll(".szb").forEach(b=>b.classList.toggle("on",cur!==null&&+b.dataset.sz===cur))
+}
+function sz(n){
+  const sel=window.getSelection?getSelection():null;
+  if(!sel||!sel.rangeCount||sel.isCollapsed){alert("먼저 바꿀 글씨를 드래그해서 선택해 주세요.");return}
+  const a=sel.anchorNode,el=a&&(a.nodeType===1?a:a.parentElement);
+  if(!el||!el.closest||!el.closest(".ed"))return;
+  document.execCommand("fontSize",false,String(n));updSz()
+}
+function pst(e){e.preventDefault();document.execCommand("insertText",false,(e.clipboardData||window.clipboardData).getData("text/plain"))}
+const szBar=()=>`<label>글씨 크기 · 바꿀 글씨를 드래그해서 고른 뒤 누르세요</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px">${[["작게",1],["보통",3],["크게",4],["아주 크게",5]].map(([t,n])=>`<button class="mini szb" data-sz="${n}" onmousedown="event.preventDefault();sz(${n})" ontouchstart="event.preventDefault();sz(${n})">${t}</button>`).join("")}</div>`;
+function editForm(c){return `${szBar()}<label>앞면 (줄바꿈 가능)</label><div class="ed" id="ef" contenteditable="true" onpaste="pst(event)">${edHtml(c.front,c.fr)}</div><label>뒷면 (줄바꿈 가능)</label><div class="ed" id="eb" contenteditable="true" onpaste="pst(event)">${edHtml(c.back,c.br)}</div><div class="row"><button class="b4" onclick="saveEdit(${c.id})">저장</button><button style="background:var(--mut)" onclick="eid=null;render()">취소</button></div>`}
+function saveEdit(id){
+  const c=cards.find(x=>x.id===id),ef=$("#ef"),eb=$("#eb");if(!c||!ef||!eb)return;
+  const F=trimRuns(readRuns(ef)),B=trimRuns(readRuns(eb)),f=F.map(r=>r[0]).join(""),b=B.map(r=>r[0]).join("");
+  if(!f||!b)return;
+  c.front=f;c.back=b;
+  if(F.some(r=>r[1]))c.fr=F;else delete c.fr;
+  if(B.some(r=>r[1]))c.br=B;else delete c.br;
+  c.upd=Date.now();eid=null;save();render()
+}
+function render(){
+  const mm=document.querySelector("main");if(mm&&mm.classList)mm.classList.toggle("wide",tab==="list");
+  $("#nav").innerHTML=[["study","학습"],["add","카드 추가"],["list","카드 목록"]].map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="tab='${k}';eid=null;render()">${l}</button>`).join("");
+  ({study:vStudy,add:vAdd,list:vList})[tab]()
+}
+function vFolders(){
+  FL=[];FK=folders();if(!(S.forder&&S.forder.length))FK.sort((a,b)=>a.localeCompare(b,"ko",{numeric:true,sensitivity:"base"}));if(!FK.length)FK=["기본"];
+  const dn=n=>op(n).dir==="ko"?" · 한→영만":op(n).dir==="en"?" · 영→한만":"";
+  const cn=(f,k)=>cards.filter(c=>f(c)&&dirOk(c,op(k).dir)).length;
+  const go1=n=>{FL.push([n,null]);return `<button class="sm" style="margin:0" onclick="go(${FL.length-1})">▶ 학습</button>`};
+  const row=(t,n,cnt)=>`<div class="item"><div><p><b>${t}</b> <span style="font-size:14px">(${cnt}개${dn(n)})</span></p></div>${go1(n)}</div>`;
+  const hid=hideF();
+  const shown=FK.filter(f=>!hid.includes(f)).map(f=>row("📁 "+esc(f),f,cn(c=>c.deck===f,f))).join("");
+  const opts=openL?FK.map((f,i)=>`<div class="item" style="padding-left:14px"><input type="checkbox" class="ck" ${hid.includes(f)?"":"checked"} onchange="tgF(${i})"><div><p>📁 ${esc(f)}</p></div></div>`).join(""):"";
+  const listHead=`<div class="item"><div style="cursor:pointer" onclick="openL=!openL;render()"><p><b>📋 학습 목록</b></p></div><button class="sm" style="margin:0;font-size:22px;line-height:1;padding:8px 18px" onclick="openL=!openL;render()" title="폴더 체크 열기/닫기">${openL?"▴":"▾"}</button>${go1(LIST)}</div>`;
+  $("#view").innerHTML=`<div class="box">${row("📚 전체",ALL,cn(c=>c.deck!==XF&&c.deck!==LF,ALL))}${shown}${row("📖 선택 카드",PL,cn(c=>S.pick.includes(c.id),PL))}${row("❌ 잊음",XF,cn(c=>c.deck===XF,XF))}${listHead}${opts}</div>`
+}
+function tgF(i){const f=FK[i],h=hideF().slice(),k=h.indexOf(f);k<0?h.push(f):h.splice(k,1);S.hideF=h;if(ses&&ses.from===LIST){ses=null;queue=[]}save();render()}
+function retry(){
+  const ids=ses.xs.filter(id=>cards.some(c=>c.id===id&&c.deck===XF));
+  if(!ids.length){alert("다시 학습할 잊은 카드가 없어요.");return}
+  const o={order:op(XF).order,dir:"all"};
+  let l=cards.filter(c=>ids.includes(c.id));
+  l=o.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5);
+  queue=l.map(c=>c.id);shown=false;eid=null;
+  ses={name:"❌ 잊음 (다시 학습)",total:queue.length,o:0,x:0,from:XF,home:null,view:false,pl:true,loop:true,round:1,opt:o,done:[],xs:[],only:ids};render()
+}
+function vDone(){
+  const s=ses,again=s.xs&&s.xs.length?`<button class="big" style="margin-top:8px" onclick="retry()">❌ 잊은 카드만 바로 다시 학습 (${s.xs.length}장)</button>`:"";
+  $("#view").innerHTML=`<div class="box empty" style="padding:24px"><div style="font-size:20px;margin-bottom:6px">🎉 끝났어요!</div>${s.view?"":`⭕ ${s.o}장 · ❌ ${s.x}장`}</div>${again}<button class="sm" style="width:100%;margin:8px 0 0;padding:12px" onclick="endSes()">폴더 목록으로</button>`
+}
+function vStudy(){
+  if(!ses)return vFolders();
+  const c=cards.find(x=>x.id===queue[0]);
+  if(!c)return vDone();
+  const nx=ses.only?0:(ses.xs||[]).filter(id=>cards.some(x=>x.id===id&&x.deck===XF)).length;
+  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><b style="flex:1">${esc(ses.name)}</b><span style="color:var(--mut);font-size:13px">${ses.total-queue.length+1} / ${ses.total}</span>${nx?`<button class="sm" style="margin:0;color:var(--r1)" onclick="retry()">❌ 잊은 카드 다시 학습 (${nx})</button>`:""}<button class="sm" style="margin:0" onclick="endSes()">종료</button></div><div class="ctl" style="margin-bottom:10px">${sesCtl()}</div>${dirNote()}`;
+  if(eid===c.id){$("#view").innerHTML=h+`<div class="box">${editForm(c)}</div>`;return}
+  h+=`<div class="box"><div style="text-align:right"><button class="sm" style="margin:0" onclick="eid=${c.id};render()">✎ 편집</button></div><div class="stage"><div class="face" style="font-size:${c.fs||22}px">${richHtml(c.front,c.fr)}</div><div class="face back" style="font-size:${c.fs||22}px;visibility:${shown?"visible":"hidden"}">${richHtml(c.back,c.br)}</div></div><div class="act${ses.pl?" act3":""}">${ses.pl?(!shown?`<button class="b4 wide" onclick="shown=true;render()">정답 보기</button>`:`<button class="b3" onclick="mark(true)">쉬움</button><button class="b1" onclick="mark(false)">어려움</button><button class="b4" onclick="nxt()">다음 ▶</button>`):!shown?`<span></span><button class="b4" onclick="shown=true;render()">정답 보기</button>`:ses.view?`<span></span><button class="b4" onclick="nxt()">다음 ▶</button>`:`<button class="b1" onclick="mark(false)">❌ 어려움</button><button class="b3" onclick="mark(true)">⭕ 쉬움</button>`}</div>`;
+  $("#view").innerHTML=h+`</div>`
+}
+function vAdd(){
+  const fs=folders();
+  if(!addF||addF===XF||addF===LF)addF=(cur&&cur!==XF&&fs.includes(cur))?cur:(fs[0]||"기본");
+  $("#view").innerHTML=`<div class="box"><label>폴더 · 눌러서 고르세요</label><div id="fch" class="chips" style="margin:6px 0 14px"></div>
+  ${szBar()}<label>앞면 (질문) · 줄바꿈 가능</label><div class="ed" id="f" contenteditable="true" data-ph="예: 안녕하세요" onpaste="pst(event)"></div><label>뒷면 (정답) · 줄바꿈 가능</label><div class="ed" id="b" contenteditable="true" data-ph="예: Hello" onpaste="pst(event)"></div>
+  <label style="display:flex;gap:8px;align-items:center;color:var(--fg);font-size:14px;margin-bottom:12px"><input type="checkbox" style="width:auto;margin:0" ${S.rev?"checked":""} onchange="setRev(this.checked)">반대 방향 카드도 함께 만들기 (한→영, 영→한)</label>
+  <button class="big" onclick="addCard()">추가</button><p id="msg" style="color:var(--r3);margin:8px 0 0"></p></div>`;
+  drawF()
+}
+function drawF(){
+  const fs=folders(),list=fs.includes(addF)?fs:[...fs,addF];FA=list;
+  $("#fch").innerHTML=list.map((n,i)=>`<button class="chip ${n===addF?"on":""}" onclick="pickF(${i})">📁 ${esc(n)}</button>`).join("")+`<button class="chip" onclick="newF()">➕ 새 폴더</button>`
+}
+function pickF(i){addF=FA[i];drawF()}
+function newF(){
+  const n=(prompt("새 폴더 이름")||"").trim();if(!n)return;
+  if(n===XF||n===LF){alert("'"+n+"'은(는) 폴더 이름으로 쓸 수 없어요.");return}
+  mkF(n);save();addF=n;drawF()
+}
+function picksChanged(){if(ses&&(ses.from===LF||ses.from===PL||ses.from==="__pick")){ses=null;queue=[];eid=null}}
+function pickFolder(on){
+  if(on)cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur).forEach(c=>{if(!S.pick.includes(c.id))S.pick.push(c.id)});
+  else S.pick=[];
+  picksChanged();save();render()
+}
+function delPicked(){
+  const ids=new Set(S.pick.filter(id=>cards.some(c=>c.id===id)));
+  if(!ids.size){alert("먼저 삭제할 카드를 체크해 주세요.");return}
+  if(!confirm("체크한 카드 "+ids.size+"장을 삭제할까요?\n되돌릴 수 없고, 동기화된 다른 기기에서도 삭제돼요.\n(먼저 '백업 저장'으로 저장해 두면 안전해요)"))return;
+  const t=Date.now();ids.forEach(id=>{S.dead[id]=t});
+  cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));S.pick=[];picksChanged();save();render()
+}
+function delGrp(ko){
+  const ids=new Set(cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko&&S.pick.includes(c.id)).map(c=>c.id));
+  if(!ids.size){alert("먼저 삭제할 카드를 체크해 주세요.");return}
+  if(!confirm("체크한 "+(ko?"한 → 영":"영 → 한")+" 카드 "+ids.size+"장을 삭제할까요?\n되돌릴 수 없고, 동기화된 다른 기기에서도 삭제돼요.\n(먼저 '백업 저장'으로 저장해 두면 안전해요)"))return;
+  const t=Date.now();ids.forEach(id=>{S.dead[id]=t});
+  cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));S.pick=S.pick.filter(id=>!ids.has(id));picksChanged();save();render()
+}
+function tp(id){const i=S.pick.indexOf(id);i<0?S.pick.push(id):S.pick.splice(i,1);picksChanged();save();render()}
+function grp(ko,on){cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko).forEach(c=>{const i=S.pick.indexOf(c.id);if(on&&i<0)S.pick.push(c.id);if(!on&&i>=0)S.pick.splice(i,1)});picksChanged();save();render()}
+function vList(){
+  const tools=`<div style="margin-bottom:14px"><label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid var(--bd);color:var(--fg)"><input type="checkbox" style="width:auto;margin:0" ${S.rev?"checked":""} onchange="setRev(this.checked)">엑셀로 가져올 때 반대 방향 카드도 함께 만들기</label><div><button class="sm" onclick="exp()">백업 저장</button><button class="sm" onclick="$('#imp').click()">백업 불러오기</button><button class="sm" onclick="$('#xl').click()">엑셀 가져오기</button><button class="sm" onclick="exportX()">엑셀 내보내기</button><button class="sm" style="color:var(--r1)" onclick="delAll()">전체 삭제</button><input id="imp" type="file" accept=".json" hidden onchange="imp(this.files[0]);this.value=''"><input id="xl" type="file" accept=".xlsx,.xls,.csv" hidden onchange="impX(this.files[0]);this.value=''"><p style="margin:8px 0 0;font-size:12px;color:var(--mut)">엑셀 형식: A열 앞면, B열 뒷면, C열 폴더(선택). 첫 줄이 '앞면/뒷면' 제목이면 자동으로 건너뛰고, 이미 있는 카드는 건너뛰어요.</p></div></div>`;
+  const fs=folders(),all=[ALLV,XF,...fs];
+  if(!all.includes(cur))cur=fs[0]||XF;
+  FN=all;
+  let h=`<div class="box"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="flex:1;font-size:12px;color:var(--mut)">폴더 버튼을 꾹 눌러 끌면 순서를 바꿀 수 있어요 (❌ 잊음 고정)</span><button class="mini" onclick="openT=!openT;render()">⚙ 관리 ${openT?"▴":"▾"}</button></div>${openT?tools:""}<div class="fbar"><div class="chips" id="chipbar">${all.map((n,i)=>`<button class="chip ${n===cur?"on":""}" ${n===XF||n===ALLV?"":`data-f="${i}" style="touch-action:none;cursor:grab"`} onclick="cur=FN[${i}];eid=null;xid=null;render()">${n===ALLV?"📚 전체":n===XF?"❌ 잊음":n===LF?"📖 학습중":"📁 "+esc(n)}</button>`).join("")}</div></div><div class="fopen">`;
+  if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
+  const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(S.lsort||{})[cur]||"input";
+  const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
+  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:64px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
+  const nz=t=>String(t).replace(/\s+/g," ").trim();
+  const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set(),rm=new Map();
+  R.forEach(c=>{const k=nz(c.front)+"\u0001"+nz(c.back);if(!rm.has(k))rm.set(k,[]);rm.get(k).push(c)});
+  const pairs=L.map(a=>{const arr=rm.get(nz(a.back)+"\u0001"+nz(a.front)),b=arr&&arr.shift();if(b)used.add(b.id);return[a,b||null]});
+  R.forEach(b=>{if(!used.has(b.id))pairs.push([null,b])});
+  let nl=0,nr=0;
+  const cell=(c,n,cls)=>c?rw(c,n).replace('class="item"','class="item '+cls+'"'):`<div class="item ph ${cls}"></div>`;
+  const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" onclick="grp(${ko},true)">전체 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
+  const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b])=>cell(a,a?++nl:0,"cl")+cell(b,b?++nr:0,"cr")).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button></div>`;
+  $("#view").innerHTML=h+col()+`</div></div>`;initDrag()
+}
+
+let noClick=false;
+function initDrag(){
+  const bar=document.querySelector("#chipbar");if(!bar)return;
+  bar.querySelectorAll(".chip[data-f]").forEach(ch=>{
+    ch.addEventListener("click",e=>{if(noClick){e.stopImmediatePropagation();e.preventDefault()}},true);
+    ch.addEventListener("pointerdown",e=>{
+      if(e.button>0)return;
+      const sx=e.clientX,sy=e.clientY,pid=e.pointerId;let drag=false,ghost=null,ox=0,oy=0;
+      const move=ev=>{
+        if(ev.pointerId!==pid)return;
+        if(!drag){if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<7)return;
+          drag=true;const r=ch.getBoundingClientRect();ox=sx-r.left;oy=sy-r.top;
+          ghost=ch.cloneNode(true);ghost.style.cssText="position:fixed;z-index:99;pointer-events:none;opacity:.9;box-shadow:0 4px 12px rgba(0,0,0,.3);left:0;top:0;width:"+r.width+"px";document.body.appendChild(ghost);
+          ch.style.opacity=".3";try{ch.setPointerCapture(pid)}catch(x){}}
+        ev.preventDefault();
+        ghost.style.transform="translate("+(ev.clientX-ox)+"px,"+(ev.clientY-oy)+"px)";
+        ghost.style.display="none";const t=document.elementFromPoint(ev.clientX,ev.clientY);ghost.style.display="";
+        const o=t&&t.closest&&t.closest(".chip[data-f]");
+        if(o&&o!==ch&&bar.contains(o)){const r=o.getBoundingClientRect(),after=ev.clientX>r.left+r.width/2;
+          const same=Math.abs((r.top+r.height/2)-(ch.getBoundingClientRect().top+ch.getBoundingClientRect().height/2))<r.height/2;
+          bar.insertBefore(ch,same?(after?o.nextSibling:o):(ev.clientY<r.top+r.height/2?o:o.nextSibling))}
+      };
+      const up=ev=>{
+        if(ev.pointerId!==pid)return;
+        removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);
+        if(!drag)return;
+        if(ghost)ghost.remove();ch.style.opacity="";
+        noClick=true;setTimeout(()=>noClick=false,50);
+        const names=[...bar.querySelectorAll(".chip[data-f]")].map(b=>FN[+b.dataset.f]);
+        S.forder=names;save();render()
+      };
+      addEventListener("pointermove",move,{passive:false});addEventListener("pointerup",up);addEventListener("pointercancel",up)
+    })
+  })
+}
+document.addEventListener("touchmove",e=>{if(document.querySelector(".chip[style*='opacity: 0.3']"))e.preventDefault()},{passive:false});
+function renameF(){
+  const n=(prompt("새 폴더 이름",cur)||"").trim();if(!n||n===cur||n===XF||n===LF)return;
+  const t=Date.now();cards.forEach(c=>{if(c.deck===cur){c.deck=n;c.upd=t}else if((c.deck===XF||c.deck===LF)&&c.home===cur){c.home=n;c.upd=t}});S.fnames=[...new Set((S.fnames||[]).map(x=>x===cur?n:x))];if(S.ftime&&S.ftime[cur]!==undefined){S.ftime[n]=Math.min(S.ftime[cur],S.ftime[n]===undefined?Infinity:S.ftime[n]);delete S.ftime[cur]}
+  S.forder=(S.forder||[]).map(x=>x===cur?n:x);S.hideF=(S.hideF||[]).map(x=>x===cur?n:x);cur=n;save();render()
+}
+function delF(){
+  const l=cards.filter(c=>c.deck===cur||(cur!==XF&&cur!==LF&&(c.deck===XF||c.deck===LF)&&c.home===cur));if(!l.length){if((S.fnames||[]).includes(cur)&&confirm("빈 폴더 '"+cur+"'을(를) 삭제할까요?")){S.fnames=S.fnames.filter(x=>x!==cur);cur=null;save();render()}return}
+  if(!confirm("'"+(cur===XF?"잊음":cur===LF?"학습중":cur)+"' 폴더의 카드 "+l.length+"장을 삭제할까요?"+(cur!==XF?"\n(잊음 폴더에 있는 이 폴더의 카드도 포함)":"")+"\n되돌릴 수 없고, 동기화된 다른 기기에서도 삭제돼요.\n(먼저 '백업 저장'으로 저장해 두면 안전해요)"))return;
+  const t=Date.now(),ids=new Set(l.map(c=>c.id));ids.forEach(id=>{S.dead[id]=t});
+  S.fnames=(S.fnames||[]).filter(x=>x!==cur);cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));cur=null;save();render()
+}
+function delAll(){
+  if(!cards.length)return;
+  if(!confirm("모든 폴더의 카드 "+cards.length+"장을 삭제할까요?\n되돌릴 수 없고, 동기화된 다른 기기에서도 삭제돼요.\n(먼저 '백업 저장'으로 저장해 두면 안전해요)"))return;
+  const t=Date.now();cards.forEach(c=>{S.dead[c.id]=t});cards=[];S.fnames=[];queue=[];ses=null;cur=null;save();render()
+}
+function exportX(){
+  if(!window.XLSX){alert("엑셀 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.");return}
+  const l=[...cards].sort((a,b)=>a.id-b.id),seen=new Set(),rows=[["앞면","뒷면","폴더"]],k=(d,x,y)=>d+"\u0001"+x+"\u0001"+y;
+  for(const c of l){const d=fd(c);if(seen.has(k(d,c.back,c.front)))continue;seen.add(k(d,c.front,c.back));rows.push([c.front,c.back,d])}
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:32},{wch:32},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"cards");XLSX.writeFile(wb,"영어회화_카드.xlsx")
+}
+function setRev(v){S.rev=v;save()}
+function addCard(){
+  const Fr=trimRuns(readRuns($("#f"))),Br=trimRuns(readRuns($("#b"))),f=Fr.map(r=>r[0]).join(""),b=Br.map(r=>r[0]).join("");
+  let d=addF||"기본";if(d===XF||d===LF)d="기본";mkF(d);
+  if(!f||!b)return;
+  const t=Date.now(),id=t+Math.random()*.5,mk=(i,x,y,xr,yr)=>{const c={id:i,front:x,back:y,deck:d,ef:2.5,int:0,reps:0,due:t,upd:t};if(xr.some(r=>r[1]))c.fr=xr;if(yr.some(r=>r[1]))c.br=yr;return c};
+  cards.push(mk(id,f,b,Fr,Br));if(S.rev)cards.push(mk(id+.001,b,f,Br,Fr));
+  save();$("#f").innerHTML="";$("#b").innerHTML="";$("#msg").textContent="✓ "+(S.rev?"2장":"1장")+" 추가됨 → 📁 "+d;$("#f").focus()
+}
+const isKo=c=>/[가-힣]/.test(c.front);
+const rh=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+function sortCards(a,f){
+  const m=(S.lsort||{})[f]||"input";
+  if(m==="alpha")return a.sort((x,y)=>x.front.localeCompare(y.front,undefined,{sensitivity:"base",numeric:true})||x.id-y.id);
+  if(m==="random"){const sd=String(((S.lseed||{})[f])||0);return a.sort((x,y)=>rh(sd+":"+x.id)-rh(sd+":"+y.id))}
+  return a.sort((x,y)=>x.id-y.id)
+}
+function setLsort(v){S.lsort=S.lsort||{};S.lsort[cur]=v;if(v==="random"){S.lseed=S.lseed||{};S.lseed[cur]=Math.floor(Math.random()*1e9)}save();render()}
+function reshuffle(){S.lseed=S.lseed||{};S.lseed[cur]=Math.floor(Math.random()*1e9);save();render()}
+function delCard(id){const c=cards.find(x=>x.id===id);if(!c)return;if(!confirm("이 카드를 삭제할까요?\n\n"+c.front.split("\n")[0]+" → "+c.back.split("\n")[0]))return;del(id)}
+function del(id){cards=cards.filter(c=>c.id!==id);queue=queue.filter(x=>x!==id);S.dead[id]=Date.now();save();render()}
+function exp(){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(cards)],{type:"application/json"}));a.download="영어회화_백업.json";a.click()
+}
+function addNew(list){const have=new Set(cards.map(nk));const fresh=list.filter(c=>{const k=nk(c);if(have.has(k))return false;have.add(k);return true});cards=cards.concat(fresh);return fresh.length}
+function impX(f){
+  if(!f)return;
+  if(!window.XLSX){alert("엑셀 라이브러리를 불러오지 못했어요");return}
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const wb=XLSX.read(r.result,{type:"array"});
+    let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:""});
+    if(rows.length&&/^(앞면|질문|front|question)$/i.test(String(rows[0][0]).trim()))rows.shift();
+    const s=x=>String(x==null?"":x).trim();
+    const list=rows.filter(x=>s(x[0])&&s(x[1])).map(x=>[s(x[0]),s(x[1]),s(x[2])]);
+    if(!list.length){alert("가져올 카드가 없어요. (A열 앞면, B열 뒷면)");return}
+    askFolder(list)
+  }catch(e){alert("파일을 읽을 수 없어요")}};
+  r.readAsArrayBuffer(f)
+}
+function askFolder(list){
+  const fs=folders(),opts=fs.length?fs:["기본"],def=opts.includes(cur)?cur:opts[0],hasC=list.some(r=>r[2]);
+  const m=document.createElement("div");m.className="dlg";
+  m.innerHTML=`<div class="dbox"><b>엑셀 ${list.length}개 문장을 넣을 폴더</b><select id="dsel" style="margin:10px 0 0">${opts.map(f=>`<option value="${esc(f)}" ${f===def?"selected":""}>📁 ${esc(f)}</option>`).join("")}<option value="__new">➕ 새 폴더 만들기</option></select><input id="dnew" type="text" placeholder="새 폴더 이름" style="display:none;margin:8px 0 0">${hasC?`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--fg);margin-top:12px"><input type="checkbox" class="ck" id="dc" checked style="width:18px;height:18px">엑셀 C열에 폴더 이름이 적힌 줄은 그 폴더로 넣기 (빈 줄만 위에서 고른 폴더)</label>`:""}<div class="row" style="margin-top:16px"><button class="b4" id="dok">가져오기</button><button id="dno" style="background:var(--mut)">취소</button></div></div>`;
+  document.body.appendChild(m);
+  const sel=m.querySelector("#dsel"),nw=m.querySelector("#dnew");
+  sel.onchange=()=>{nw.style.display=sel.value==="__new"?"block":"none";if(sel.value==="__new")nw.focus()};
+  m.querySelector("#dno").onclick=()=>m.remove();
+  m.querySelector("#dok").onclick=()=>{
+    let t=sel.value;
+    if(t==="__new"){t=nw.value.trim();if(!t){alert("새 폴더 이름을 입력해 주세요.");return}if(t===XF||t===LF){alert("'"+t+"'은(는) 폴더 이름으로 쓸 수 없어요.");return}}
+    const dc=m.querySelector("#dc");m.remove();doImport(list,t,!!(dc&&dc.checked))
+  }
+}
+function doImport(list,target,useC){
+  const t=Date.now();
+  const add=list.flatMap((x,i)=>{
+    const dk=(useC&&x[2]&&x[2]!==XF&&x[2]!==LF)?x[2]:target;
+    const mk=(id,f,b)=>({id,front:f,back:b,deck:dk,ef:2.5,int:0,reps:0,due:t,upd:t});
+    return S.rev?[mk(t+2*i/1000,x[0],x[1]),mk(t+(2*i+1)/1000,x[1],x[0])]:[mk(t+i/1000,x[0],x[1])]
+  });
+  const have=new Map();cards.forEach(c=>{const k=nk(c);if(!have.has(k))have.set(k,c)});
+  const fresh=[],skip=[];
+  add.forEach(c=>{const e=have.get(nk(c));if(e)skip.push([c,e]);else fresh.push(c)});
+  cards=cards.concat(fresh);
+  mkF(target);fresh.forEach(c=>mkF(c.deck));
+  cur=target;side=true;save();render();
+  const where=e=>e.deck===XF?"잊음 폴더":"'"+e.deck+"' 폴더",one=x=>x.split("\n")[0];
+  alert(fresh.length+"장을 '"+target+"' 폴더"+(useC?"(및 C열 폴더)":"")+"에 가져왔어요"+(skip.length?"\n\n앱에 이미 같은 카드가 있어서 건너뛴 "+skip.length+"장:\n"+skip.slice(0,8).map(([c,e])=>"· "+one(c.front)+" → "+one(c.back)+" ("+where(e)+"에 있음)").join("\n")+(skip.length>8?"\n… 외 "+(skip.length-8)+"장":""):""))
+}
+function imp(f){
+  if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const a=JSON.parse(r.result);if(Array.isArray(a)){const t0=Date.now(),add=a.filter(x=>x.front&&x.back).sort((p,q)=>(p.id||0)-(q.id||0)).map((x,i)=>({ef:2.5,int:0,reps:0,due:t0,deck:"기본",...x,upd:t0,id:t0+i/1000}));const n=addNew(add),sk=add.length-n;save();render();alert(n+"장을 가져왔어요"+(sk?" (이미 있는 "+sk+"장은 건너뛰었어요)":""))}}catch(e){alert("파일을 읽을 수 없어요")}};
+  r.readAsText(f)
+}
+cards.forEach(c=>{if(c.deck===LF){c.deck=c.home||"기본";c.upd=Date.now()}});
+try{document.execCommand("defaultParagraphSeparator",false,"br")}catch(e){}
+themeBtn();
+render();initSync();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+
+</script>
+</body>
+</html>
