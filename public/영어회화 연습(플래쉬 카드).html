@@ -95,6 +95,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-06 · 짝 맞춤 v5</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -321,15 +322,31 @@ function sz(n){
 }
 function pst(e){e.preventDefault();document.execCommand("insertText",false,(e.clipboardData||window.clipboardData).getData("text/plain"))}
 const szBar=()=>`<label>글씨 크기 · 바꿀 글씨를 드래그해서 고른 뒤 누르세요</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px">${[["작게",1],["보통",3],["크게",4],["아주 크게",5]].map(([t,n])=>`<button class="mini szb" data-sz="${n}" onmousedown="event.preventDefault();sz(${n})" ontouchstart="event.preventDefault();sz(${n})">${t}</button>`).join("")}</div>`;
-function editForm(c){return `${szBar()}<label>앞면 (줄바꿈 가능)</label><div class="ed" id="ef" contenteditable="true" onpaste="pst(event)">${edHtml(c.front,c.fr)}</div><label>뒷면 (줄바꿈 가능)</label><div class="ed" id="eb" contenteditable="true" onpaste="pst(event)">${edHtml(c.back,c.br)}</div><div class="row"><button class="b4" onclick="saveEdit(${c.id})">저장</button><button style="background:var(--mut)" onclick="eid=null;render()">취소</button></div>`}
+const nzs=t=>String(t).replace(/\s+/g," ").trim();
+const nnk=t=>String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g,"");
+function mateOf(c){
+  const h=fd(c),pool=cards.filter(x=>x!==c&&fd(x)===h&&isKo(x)!==isKo(c));
+  // ①글자까지 같은 짝 ②띄어쓰기·문장부호 무시 ③영어(또는 한글) 한쪽만 같고 후보가 하나뿐일 때
+  let m=pool.find(x=>nzs(x.front)===nzs(c.back)&&nzs(x.back)===nzs(c.front));if(m)return m;
+  m=pool.find(x=>nnk(x.front)===nnk(c.back)&&nnk(x.back)===nnk(c.front));if(m)return m;
+  const one=f=>{const a=pool.filter(f);return a.length===1?a[0]:null};
+  return(nnk(c.back)&&one(x=>nnk(x.front)===nnk(c.back)))||(nnk(c.front)&&one(x=>nnk(x.back)===nnk(c.front)))||null
+}
+function editForm(c){const m=mateOf(c);return `${szBar()}<label>앞면 (줄바꿈 가능)</label><div class="ed" id="ef" contenteditable="true" onpaste="pst(event)">${edHtml(c.front,c.fr)}</div><label>뒷면 (줄바꿈 가능)</label><div class="ed" id="eb" contenteditable="true" onpaste="pst(event)">${edHtml(c.back,c.br)}</div>${m?`<p style="margin:2px 0 10px;font-size:12px;color:var(--mut)">🔗 짝 카드(${isKo(m)?"한→영":"영→한"})도 자동으로 같이 수정돼요</p>`:""}<div class="row"><button class="b4" onclick="saveEdit(${c.id})">저장</button><button style="background:var(--mut)" onclick="eid=null;render()">취소</button></div>`}
 function saveEdit(id){
   const c=cards.find(x=>x.id===id),ef=$("#ef"),eb=$("#eb");if(!c||!ef||!eb)return;
   const F=trimRuns(readRuns(ef)),B=trimRuns(readRuns(eb)),f=F.map(r=>r[0]).join(""),b=B.map(r=>r[0]).join("");
   if(!f||!b)return;
+  const m=mateOf(c),both=!!m;
   c.front=f;c.back=b;
   if(F.some(r=>r[1]))c.fr=F;else delete c.fr;
   if(B.some(r=>r[1]))c.br=B;else delete c.br;
-  c.upd=Date.now();eid=null;save();render()
+  c.upd=Date.now();
+  if(both){m.front=b;m.back=f;
+    if(B.some(r=>r[1]))m.fr=B.map(r=>[r[0],r[1]]);else delete m.fr;
+    if(F.some(r=>r[1]))m.br=F.map(r=>[r[0],r[1]]);else delete m.br;
+    m.upd=c.upd}
+  eid=null;save();render()
 }
 function render(){
   const mm=document.querySelector("main");if(mm&&mm.classList)mm.classList.toggle("wide",tab==="list");
@@ -425,10 +442,20 @@ function vList(){
   const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
   const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:64px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
   const nz=t=>String(t).replace(/\s+/g," ").trim();
-  const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set(),rm=new Map();
-  R.forEach(c=>{const k=nz(c.front)+"\u0001"+nz(c.back);if(!rm.has(k))rm.set(k,[]);rm.get(k).push(c)});
-  const pairs=L.map(a=>{const arr=rm.get(nz(a.back)+"\u0001"+nz(a.front)),b=arr&&arr.shift();if(b)used.add(b.id);return[a,b||null]});
-  R.forEach(b=>{if(!used.has(b.id))pairs.push([null,b])});
+  const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set();
+  const nn=t=>String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g,"");
+  const pairs=L.map(a=>[a,null]);let remR=R.slice();
+  // 짝 찾기: ①글자까지 똑같이 → ②띄어쓰기·문장부호·대소문자 무시 → ③영어 문장만 같으면 → ④한글 문장만 같으면
+  const run=(kA,kB)=>{
+    const m=new Map();remR.forEach(b=>{const k=kB(b);if(!k.replace(/[|\u0001]/g,""))return;if(!m.has(k))m.set(k,[]);m.get(k).push(b)});
+    pairs.forEach(pr=>{if(pr[1])return;const k=kA(pr[0]);if(!k.replace(/[|\u0001]/g,""))return;const arr=m.get(k);if(arr&&arr.length){const b=arr.shift();pr[1]=b;used.add(b.id)}});
+    remR=remR.filter(b=>!used.has(b.id))
+  };
+  run(a=>nz(a.back)+"\u0001"+nz(a.front),b=>nz(b.front)+"\u0001"+nz(b.back));
+  run(a=>nn(a.back)+"|"+nn(a.front),b=>nn(b.front)+"|"+nn(b.back));
+  run(a=>nn(a.back),b=>nn(b.front));
+  run(a=>nn(a.front),b=>nn(b.back));
+  remR.forEach(b=>pairs.push([null,b]));
   const allK=new Map();cards.forEach(c=>{const k=nk(c);if(!allK.has(k))allK.set(k,c)});
   const mate=c=>allK.get(nk({deck:fd(c),front:c.back,back:c.front}));
   const unp=cur===XF?[]:pairs.flatMap(([a,b])=>a&&!b?[a]:b&&!a?[b]:[]).filter(c=>!mate(c));MISS=unp.map(c=>c.id);
