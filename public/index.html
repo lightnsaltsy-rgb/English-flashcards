@@ -82,6 +82,7 @@ main.wide{max-width:960px}
   .cr:not(.ph)+.cl,.cr+.cl{margin-top:2px}
 }
 .item.ph{border-bottom-color:transparent}.item .nopair{color:var(--mut);font-size:12px;opacity:.55;padding-left:34px}
+.grip{flex:none;touch-action:none;cursor:grab;color:var(--mut);font-size:15px;letter-spacing:-3px;padding:8px 6px 8px 0;margin-right:2px;user-select:none;-webkit-user-select:none;line-height:1}
 .item .sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .note{border:1px solid var(--ac);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .fbar{background:var(--gray);border:1px solid var(--bd);border-bottom:3px solid var(--mut);border-radius:10px 10px 0 0;padding:10px 10px 4px}
@@ -95,7 +96,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-06 · v6 (이름 변경)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v7 (직접 정렬)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -440,7 +441,7 @@ function vList(){
   if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
   const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(S.lsort||{})[cur]||"input";
   const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
-  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:64px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
+  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="끌어서 한영·영한 쌍으로 순서 이동">⋮⋮</span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
   const nz=t=>String(t).replace(/\s+/g," ").trim();
   const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set();
   const nn=t=>String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g,"");
@@ -456,15 +457,17 @@ function vList(){
   run(a=>nn(a.back),b=>nn(b.front));
   run(a=>nn(a.front),b=>nn(b.back));
   remR.forEach(b=>pairs.push([null,b]));
+  if(lm==="manual"){const ky=([a,b])=>Math.min(a&&a.ord!=null?a.ord:1e15,b&&b.ord!=null?b.ord:1e15);pairs.sort((p,q)=>ky(p)-ky(q))}
+  PAIRS=pairs.map(([a,b])=>[a?a.id:null,b?b.id:null]);
   const allK=new Map();cards.forEach(c=>{const k=nk(c);if(!allK.has(k))allK.set(k,c)});
   const mate=c=>allK.get(nk({deck:fd(c),front:c.back,back:c.front}));
   const unp=cur===XF?[]:pairs.flatMap(([a,b])=>a&&!b?[a]:b&&!a?[b]:[]).filter(c=>!mate(c));MISS=unp.map(c=>c.id);
-  const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+'"');const m=o&&mate(o);return `<div class="item ph ${cls}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
+  const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+'" data-pi="'+(n-1)+'"');const m=o&&mate(o);return `<div class="item ph ${cls}" data-pi="${n-1}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
   const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" onclick="grp(${ko},true)">전체 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
   const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b],i)=>cell(a,i+1,"cl",b)+cell(b,i+1,"cr",a)).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
-  h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순"],["manual","직접 정렬"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button>${unp.length?`<button class="mini" onclick="mkMissing()">➕ 짝 없는 ${unp.length}장의 반대 방향 만들기</button>`:""}</div>`;
-  $("#view").innerHTML=h+col()+`</div></div>`;initDrag()
+  $("#view").innerHTML=h+col()+`</div></div>`;initDrag();initPairDrag()
 }
 
 let MISS=[];
@@ -476,6 +479,55 @@ function mkMissing(){
   const n=addNew(list);save();render();
   if(n<list.length)alert(n+"장을 만들었어요. (이미 같은 카드가 있는 "+(list.length-n)+"장은 건너뛰었어요)")
 }
+
+let PAIRS=[];
+function savePairOrder(order){
+  const t=Date.now();let k=0;
+  order.forEach(pi=>{k++;(PAIRS[pi]||[]).forEach(id=>{const c=cards.find(x=>x.id===id);if(c&&c.ord!==k){c.ord=k;c.upd=t}})});
+  S.lsort=S.lsort||{};S.lsort[cur]="manual";
+  save();render()
+}
+function initPairDrag(){
+  const root=document.querySelector(".cols");if(!root)return;
+  const members=pi=>[...root.querySelectorAll('[data-pi="'+pi+'"]')];
+  const vis=e=>e.getBoundingClientRect().height>0;
+  const renum=()=>{let last=null,n=0;root.querySelectorAll("[data-pi]").forEach(e=>{const p=e.dataset.pi;if(p!==last){n++;last=p}const no=e.querySelector(".no");if(no)no.textContent=n+"."})};
+  root.querySelectorAll(".grip").forEach(g=>{
+    g.addEventListener("pointerdown",e=>{
+      if(e.button>0)return;e.preventDefault();
+      const item=g.closest("[data-pi]"),pi=item.dataset.pi;
+      const sx=e.clientX,sy=e.clientY,pid=e.pointerId;let drag=false,ghost=null,ox=0,oy=0,lastY=sy,timer=null;
+      const move=ev=>{
+        if(ev.pointerId!==pid)return;lastY=ev.clientY;
+        if(!drag){if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;
+          drag=true;const r=item.getBoundingClientRect();ox=sx-r.left;oy=sy-r.top;
+          ghost=item.cloneNode(true);ghost.style.cssText="position:fixed;z-index:99;pointer-events:none;opacity:.92;box-shadow:0 4px 14px rgba(0,0,0,.3);background:var(--card);left:0;top:0;width:"+r.width+"px";document.body.appendChild(ghost);
+          members(pi).forEach(m=>m.style.opacity=".3");
+          timer=setInterval(()=>{if(lastY<70)scrollBy(0,-14);else if(lastY>innerHeight-70)scrollBy(0,14)},30)}
+        ev.preventDefault();
+        ghost.style.transform="translate("+(ev.clientX-ox)+"px,"+(ev.clientY-oy)+"px)";
+        ghost.style.display="none";const t=document.elementFromPoint(ev.clientX,ev.clientY);ghost.style.display="";
+        const o=t&&t.closest&&t.closest("[data-pi]");
+        if(!o||!root.contains(o)||o.dataset.pi===pi)return;
+        const mem=members(o.dataset.pi),v=mem.filter(vis),top=Math.min(...v.map(e=>e.getBoundingClientRect().top)),bot=Math.max(...v.map(e=>e.getBoundingClientRect().bottom));
+        const mine=members(pi),before=ev.clientY<(top+bot)/2;
+        const ref=before?mem[0]:mem[mem.length-1].nextSibling;
+        mine.forEach(m=>root.insertBefore(m,ref));
+        renum()
+      };
+      const up=ev=>{
+        if(ev.pointerId!==pid)return;
+        removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);
+        clearInterval(timer);if(!drag)return;
+        ghost.remove();members(pi).forEach(m=>m.style.opacity="");
+        const order=[];root.querySelectorAll("[data-pi]").forEach(e=>{const p=+e.dataset.pi;if(order[order.length-1]!==p)order.push(p)});
+        savePairOrder(order)
+      };
+      addEventListener("pointermove",move,{passive:false});addEventListener("pointerup",up);addEventListener("pointercancel",up)
+    })
+  })
+}
+document.addEventListener("touchmove",e=>{if(document.querySelector(".cols [style*='opacity: 0.3']"))e.preventDefault()},{passive:false});
 let noClick=false;
 function initDrag(){
   const bar=document.querySelector("#chipbar");if(!bar)return;
@@ -549,6 +601,7 @@ const rh=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=M
 function sortCards(a,f){
   const m=(S.lsort||{})[f]||"input";
   if(m==="alpha")return a.sort((x,y)=>x.front.localeCompare(y.front,undefined,{sensitivity:"base",numeric:true})||x.id-y.id);
+  if(m==="manual")return a.sort((x,y)=>(x.ord!=null?x.ord:1e15)-(y.ord!=null?y.ord:1e15)||x.id-y.id);
   if(m==="random"){const sd=String(((S.lseed||{})[f])||0);return a.sort((x,y)=>rh(sd+":"+x.id)-rh(sd+":"+y.id))}
   return a.sort((x,y)=>x.id-y.id)
 }
