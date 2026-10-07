@@ -96,6 +96,9 @@ main.wide{max-width:960px}
 .item.ph{border-bottom-color:transparent}.item .nopair{color:var(--mut);font-size:12px;opacity:.55;padding-left:34px}
 .grip{flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:38px;margin:0 2px 0 -4px;border-radius:9px;touch-action:none;cursor:grab;color:var(--mut);opacity:.75;user-select:none;-webkit-user-select:none;transition:background .15s,color .15s,opacity .15s}
 .grip:hover{background:var(--gray);color:var(--ac);opacity:1}.grip:active{cursor:grabbing;background:var(--ac);color:#fff;opacity:1}
+.item.pcut{opacity:.4}
+.item.pnew{background:rgba(125,211,252,.38);box-shadow:inset 4px 0 0 #38bdf8}
+.item.ptarget{box-shadow:inset 0 -4px 0 var(--ac);background:rgba(59,110,245,.07)}
 .item.psel{background:rgba(59,110,245,.10);box-shadow:inset 3px 0 0 var(--ac)}
 .pctip{display:none;margin:0 0 10px;font-size:12px;color:var(--mut)}@media (hover:hover) and (pointer:fine){.pctip{display:block}}
 .item .sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -111,7 +114,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v12 (가로 보기)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v15 (붙여넣기 표시)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -228,13 +231,13 @@ function dirNote(){
   const src=srcCards(),hid=src.length-src.filter(c=>dirOk(c,d)).length;
   return hid>0?`<div class="note">방향 설정(${d==="ko"?"한→영":"영→한"}) 때문에 ${hid}장은 나오지 않아요 <button class="mini" onclick="setSes('dir','all')">전체 방향으로 보기</button></div>`:""
 }
-function sesCtl(){const o=op(ses.from),f=(k,v,a)=>`<select onchange="setSes('${k}',this.value)">${a.map(([x,t])=>`<option value="${x}" ${v===x?"selected":""}>${t}</option>`).join("")}</select>`;return f("order",o.order,[["random","랜덤"],["seq","입력순"]])+f("dir",o.dir,[["all","전체"],["ko","한→영"],["en","영→한"]])}
+function sesCtl(){const o=op(ses.from),f=(k,v,a)=>`<select onchange="setSes('${k}',this.value)">${a.map(([x,t])=>`<option value="${x}" ${v===x?"selected":""}>${t}</option>`).join("")}</select>`;return f("order",o.order,[["random","랜덤"],["seq","입력순(카드 목록 순서)"]])+f("dir",o.dir,[["all","전체"],["ko","한→영"],["en","영→한"]])}
 function start(name,home){
   const pk=name==="__pick"||name===LF||name===PL,lp=name===LF||name===PL,o=op(name);
   let l=pk?cards.filter(c=>S.pick.includes(c.id)):cards.filter(c=>name===LIST?inList(c):name===ALL?(c.deck!==XF&&c.deck!==LF):name===XF?c.deck===XF&&(!home||(c.home||"기본")===home):c.deck===name);
   l=l.filter(c=>dirOk(c,o.dir));
   if(!l.length){alert(pk?(S.pick.length?"선택 카드 중 지금 설정한 방향(한→영/영→한)에 맞는 카드가 없어요.":"카드 목록에서 학습할 카드를 먼저 선택해 주세요."):name===LIST?"체크된 폴더에 학습할 카드가 없어요. (폴더 체크와 방향 설정을 확인해 보세요)":name===XF?(cards.some(c=>c.deck===XF)?"잊은 카드 중 지금 설정한 방향에 맞는 카드가 없어요.":"잊은 카드가 아직 없어요."):name===LF?"학습중 폴더가 비어 있어요. 카드 목록에서 카드를 골라 '학습중으로 보내기'를 눌러 주세요.":"학습할 카드가 없어요. (방향 설정을 확인해 보세요)");return}
-  l=o.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5);
+  l=o.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5);
   queue=l.map(c=>c.id);shown=false;eid=null;
   ses={name:name===LIST?"📋 학습 목록":name===ALL?"📚 전체":name===PL?"📖 선택 카드":name===LF?"📖 학습중":pk?"✅ 선택 카드":name===XF?"❌ 잊음"+(home?" · "+home:""):"📁 "+name,total:queue.length,o:0,x:0,from:name,home,view:name===LF,pl:true,loop:true,round:1,opt:o,done:[],xs:[]};render()
 }
@@ -251,7 +254,7 @@ function nxt(){
   const prev=queue[0];queue.shift();shown=false;eid=null;
   if(!queue.length&&ses&&ses.loop){
     let l=srcCards().filter(c=>dirOk(c,ses.opt.dir)&&!ses.done.includes(c.id));
-    if(l.length){queue=(ses.opt.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.round++}
+    if(l.length){queue=(ses.opt.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.round++}
   }
   render()
 }
@@ -387,7 +390,7 @@ function retry(){
   if(!ids.length){alert("다시 학습할 잊은 카드가 없어요.");return}
   const o={order:op(XF).order,dir:"all"};
   let l=cards.filter(c=>ids.includes(c.id));
-  l=o.order==="seq"?l.sort((a,b)=>a.id-b.id):l.sort(()=>Math.random()-.5);
+  l=o.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5);
   queue=l.map(c=>c.id);shown=false;eid=null;
   ses={name:"❌ 잊음 (다시 학습)",total:queue.length,o:0,x:0,from:XF,home:null,view:false,pl:true,loop:true,round:1,opt:o,done:[],xs:[],only:ids};render()
 }
@@ -454,7 +457,7 @@ function vList(){
   FN=all;
   let h=`<div class="box"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="flex:1;font-size:12px;color:var(--mut)">폴더 버튼을 꾹 눌러 끌면 순서를 바꿀 수 있어요 (❌ 잊음 고정)</span><button class="mini" onclick="openT=!openT;render()">⚙ 관리 ${openT?"▴":"▾"}</button></div>${openT?tools:""}<div class="fbar"><div class="chips" id="chipbar">${all.map((n,i)=>`<button class="chip ${n===cur?"on":""}" ${n===XF||n===ALLV?"":`data-f="${i}" style="touch-action:none;cursor:grab"`} onclick="cur=FN[${i}];eid=null;xid=null;render()">${n===ALLV?"📚 전체":n===XF?"❌ 잊음":n===LF?"📖 학습중":"📁 "+esc(n)}</button>`).join("")}</div></div><div class="fopen">`;
   if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
-  const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(S.lsort||{})[cur]||"input";
+  const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(m=>m==="manual"?"input":m)((S.lsort||{})[cur]||"input");
   const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
   const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="압정핀을 잡고 끌어서 한영·영한 쌍으로 순서 이동"><svg width="17" height="21" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true"><rect x="4" y="1.2" width="10" height="3" rx="1.4"/><path d="M6.1 4.2L7.1 10.8H10.9L11.9 4.2Z"/><rect x="4.6" y="10.6" width="8.8" height="2.2" rx="1.1"/><path d="M9 12.8V20.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
   const nz=t=>String(t).replace(/\s+/g," ").trim();
@@ -472,7 +475,12 @@ function vList(){
   run(a=>nn(a.back),b=>nn(b.front));
   run(a=>nn(a.front),b=>nn(b.back));
   remR.forEach(b=>pairs.push([null,b]));
-  if(lm==="manual"){const ky=([a,b])=>Math.min(a&&a.ord!=null?a.ord:1e15,b&&b.ord!=null?b.ord:1e15);pairs.sort((p,q)=>ky(p)-ky(q))}
+  if(lm==="input"){
+    const fm=new Map();folders().forEach((f,i)=>fm.set(f,i));
+    const fiP=([a,b])=>{const v=fm.get(fd(a||b));return v==null?1e6:v};
+    const ky=([a,b])=>Math.min(a?ordv(a):1e15,b?ordv(b):1e15);
+    pairs.sort((p,q)=>fiP(p)-fiP(q)||ky(p)-ky(q))
+  }
   PAIRS=pairs.map(([a,b])=>[a?a.id:null,b?b.id:null]);
   const allK=new Map();cards.forEach(c=>{const k=nk(c);if(!allK.has(k))allK.set(k,c)});
   const mate=c=>allK.get(nk({deck:fd(c),front:c.back,back:c.front}));
@@ -480,9 +488,9 @@ function vList(){
   const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+'" data-pi="'+(n-1)+'"');const m=o&&mate(o);return `<div class="item ph ${cls}" data-pi="${n-1}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
   const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" onclick="grp(${ko},true)">전체 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
   const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b],i)=>cell(a,i+1,"cl",b)+cell(b,i+1,"cr",a)).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
-  h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순"],["manual","직접 정렬"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순(내가 정한 순서)"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button>${unp.length?`<button class="mini" onclick="mkMissing()">➕ 짝 없는 ${unp.length}장의 반대 방향 만들기</button>`:""}</div>`;
-  $("#view").innerHTML=h+`<p class="pctip">💡 Shift+클릭으로 여러 쌍을 한꺼번에 선택(Ctrl+클릭은 하나씩)한 뒤 압정핀 아이콘을 끌면 함께 이동해요 · 선택한 줄을 다시 누르면 취소돼요</p><div id="selhint" class="note" style="display:none"></div>`+col()+`</div></div>`;initDrag();initPairDrag()
+  $("#view").innerHTML=h+`<p class="pctip">💡 Shift+클릭으로 여러 쌍을 한꺼번에 선택(Ctrl+클릭은 하나씩)한 뒤 압정핀 아이콘을 끌거나, Ctrl+X(잘라내기)·Ctrl+C(복사) 후 붙여넣을 줄을 클릭하고 Ctrl+V로 옮길 수 있어요</p><div id="selhint" class="note" style="display:none"></div>`+col()+`</div></div>`;initDrag();initPairDrag()
 }
 
 let MISS=[];
@@ -496,28 +504,91 @@ function mkMissing(){
 }
 
 let PAIRS=[];
+function setOrd(c,k,t){
+  if(c.ord!==k){c.ord=k;c.upd=t}
+  const m=mateOf(c);if(m&&m.deck===XF&&m.ord!==k){m.ord=k;m.upd=t}
+}
 function savePairOrder(order){
   const t=Date.now();let k=0;
-  order.forEach(pi=>{k++;(PAIRS[pi]||[]).forEach(id=>{const c=cards.find(x=>x.id===id);if(c&&c.ord!==k){c.ord=k;c.upd=t}})});
-  S.lsort=S.lsort||{};S.lsort[cur]="manual";
+  order.forEach(pi=>{k++;(PAIRS[pi]||[]).forEach(id=>{const c=cards.find(x=>x.id===id);if(c)setOrd(c,k,t)})});
+  S.lsort=S.lsort||{};S.lsort[cur]="input";
   save();render()
 }
 let SELIDS=new Set(),SELCUR=null,SELANCH=null;
 const pairOrder=root=>{const o=[];root.querySelectorAll("[data-pi]").forEach(e=>{const p=+e.dataset.pi;if(o[o.length-1]!==p)o.push(p)});return o};
 const pairSel=pi=>(PAIRS[pi]||[]).some(id=>id!=null&&SELIDS.has(id));
 const selPair=(pi,on)=>(PAIRS[pi]||[]).forEach(id=>{if(id!=null){on?SELIDS.add(id):SELIDS.delete(id)}});
+let CLIP=null,PTARGET=null,JUST=new Set();
+const idsSel=p=>p.some(id=>id!=null&&SELIDS.has(id));
 function paintSel(root){
-  root.querySelectorAll("[data-pi]").forEach(e=>e.classList.toggle("psel",pairSel(+e.dataset.pi)));
+  const cutSet=new Set(CLIP&&CLIP.mode==="cut"?CLIP.pairs.flat():[]);
+  const tSet=new Set(PTARGET||[]);
+  root.querySelectorAll("[data-pi]").forEach(e=>{const pi=+e.dataset.pi,ids=PAIRS[pi]||[];e.classList.toggle("psel",pairSel(pi));e.classList.toggle("pcut",ids.some(id=>cutSet.has(id)));e.classList.toggle("ptarget",!!CLIP&&ids.some(id=>tSet.has(id)));e.classList.toggle("pnew",ids.some(id=>JUST.has(id)))});
   const h=document.querySelector("#selhint");if(!h)return;
-  const n=pairOrder(root).filter(pairSel).length;h.style.display=n?"flex":"none";
-  if(n)h.innerHTML=`<span style="flex:1">✅ ${n}쌍 선택됨 · 압정핀 아이콘을 끌면 함께 이동해요 · 선택한 줄을 다시 누르면 취소돼요</span><button class="mini" onclick="clearSel()">선택 해제</button>`
+  const n=pairOrder(root).filter(pairSel).length,rows=[];
+  const nj=JUST.size?pairOrder(root).filter(pi=>(PAIRS[pi]||[]).some(id=>JUST.has(id))).length:0;
+  if(nj)rows.push([`✨ 방금 붙여넣은 ${nj}쌍이 연하늘색으로 표시돼요 · 확인한 뒤 아무 곳이나 클릭하면 원래 색으로 돌아와요`]);
+  if(CLIP){const ti=PTARGET?PAIRS.findIndex(p=>p.some(id=>id!=null&&tSet.has(id))):-1;
+    rows.push([`${CLIP.mode==="cut"?"✂ 잘라낸":"📋 복사한"} ${CLIP.pairs.length}쌍 · 붙여넣을 위치의 줄을 클릭한 뒤 Ctrl+V ${ti>=0?`· 📍 ${ti+1}번 줄 뒤에 붙어요`:"(클릭하지 않으면 맨 끝에 붙어요)"}`,"clipClear()","취소"])}
+  if(n)rows.push([`✅ ${n}쌍 선택됨 · Ctrl+X 잘라내기 · Ctrl+C 복사 · 압정핀을 끌면 함께 이동 · 선택한 줄을 다시 누르면 취소`,"clearSel()","선택 해제"]);
+  h.style.display=rows.length?"flex":"none";h.style.flexDirection="column";h.style.gap="6px";
+  h.innerHTML=rows.map(([t,fn,b])=>`<div style="display:flex;gap:8px;align-items:center"><span style="flex:1">${t}</span>${fn?`<button class="mini" onclick="${fn}">${b}</button>`:""}</div>`).join("")
+}
+function clipClear(){CLIP=null;PTARGET=null;const r=document.querySelector(".cols");if(r)paintSel(r)}
+function clipSet(mode){
+  const sel=PAIRS.filter(idsSel).map(p=>p.filter(x=>x!=null));
+  if(!sel.length)return false;
+  CLIP={mode,pairs:sel};PTARGET=null;SELIDS.clear();SELANCH=null;
+  const r=document.querySelector(".cols");if(r)paintSel(r);return true
+}
+function pasteClip(){
+  if(!CLIP||cur===XF)return;
+  const t=Date.now(),cut=CLIP.mode==="cut",real=cur!==ALLV;
+  const dest=PAIRS.map(p=>p.filter(x=>x!=null)),cl=new Set(CLIP.pairs.flat());
+  const base=cut?dest.filter(p=>!p.some(id=>cl.has(id))):dest.slice();
+  const tg=new Set(PTARGET&&PTARGET.length?PTARGET:[...SELIDS]);
+  let at=base.length;for(let i=base.length-1;i>=0;i--){if(base[i].some(id=>tg.has(id))){at=i+1;break}}
+  let ins=[];
+  if(cut){
+    let skipped=0;
+    ins=CLIP.pairs.map(p=>p.filter(id=>cards.some(c=>c.id===id))).filter(p=>{
+      if(!real)return true;
+      const mv=p.map(id=>cards.find(x=>x.id===id)).filter(c=>c.deck!==cur&&c.deck!==XF&&c.deck!==LF);
+      if(mv.some(c=>cards.some(x=>x!==c&&nk(x)===nk({deck:cur,front:c.front,back:c.back})))){skipped++;return false}   // 같은 카드가 이미 있으면 옮기지 않음
+      mv.forEach(c=>{c.deck=cur;c.upd=t});return true
+    });
+    if(skipped)alert(skipped+"쌍은 이 폴더에 똑같은 카드가 이미 있어서 옮기지 않았어요.")
+  }else{
+    let n=0;
+    const mk=c=>{const x={id:t+(n++)+Math.random()*.5,front:c.front,back:c.back,deck:real?cur:fd(c),ef:2.5,int:0,reps:0,due:t,upd:t};if(c.fr)x.fr=c.fr.map(r=>[...r]);if(c.br)x.br=c.br.map(r=>[...r]);return x};
+    const made=CLIP.pairs.map(p=>p.map(id=>cards.find(x=>x.id===id)).filter(Boolean).map(mk)),all=made.flat();
+    const cnt=addNew(all);
+    ins=made.map(p=>p.filter(c=>cards.includes(c)).map(c=>c.id));
+    if(cnt<all.length)alert((all.length-cnt)+"장은 같은 폴더에 똑같은 카드가 이미 있어서 건너뛰었어요.")
+  }
+  ins=ins.filter(p=>p.length);base.splice(at,0,...ins);
+  base.forEach((p,i)=>p.forEach(id=>{const c=cards.find(x=>x.id===id);if(c)setOrd(c,i+1,t)}));
+  S.lsort=S.lsort||{};S.lsort[cur]="input";
+  JUST=new Set(ins.flat());
+  if(cut)CLIP=null;PTARGET=null;SELIDS.clear();SELANCH=null;save();render();
+  requestAnimationFrame(()=>{const el=document.querySelector(".cols .pnew");if(el&&el.scrollIntoView)el.scrollIntoView({block:"center",behavior:"smooth"})})
 }
 function clearSel(){SELIDS.clear();SELANCH=null;const r=document.querySelector(".cols");if(r)paintSel(r)}
 function initPairDrag(){
   const root=document.querySelector(".cols");if(!root)return;
-  if(SELCUR!==cur){SELIDS.clear();SELANCH=null;SELCUR=cur}
+  if(SELCUR!==cur){SELIDS.clear();SELANCH=null;PTARGET=null;SELCUR=cur}
   paintSel(root);
-  if(!window.__escSel){window.__escSel=1;document.addEventListener("keydown",e=>{if(e.key==="Escape")clearSel()})}
+  if(!window.__keysSel){window.__keysSel=1;
+  document.addEventListener("click",()=>{if(!JUST.size)return;JUST=new Set();const r=document.querySelector(".cols");if(r)paintSel(r)},true);
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){JUST=new Set();clearSel();clipClear();return}
+    if(!(e.ctrlKey||e.metaKey)||e.altKey||!document.querySelector(".cols"))return;
+    const t=e.target;if(t&&t.closest&&t.closest("input,textarea,select,[contenteditable]"))return;
+    const sg=window.getSelection?String(window.getSelection()):"";if(sg.trim())return;
+    const k=e.key.toLowerCase();
+    if(k==="c"||k==="x"){if(clipSet(k==="x"?"cut":"copy"))e.preventDefault()}
+    else if(k==="v"&&CLIP){e.preventDefault();pasteClip()}
+  })}
   const members=pi=>[...root.querySelectorAll('[data-pi="'+pi+'"]')];
   const vis=e=>e.getBoundingClientRect().height>0;
   const renum=()=>{let last=null,n=0;root.querySelectorAll("[data-pi]").forEach(e=>{const p=e.dataset.pi;if(p!==last){n++;last=p}const no=e.querySelector(".no");if(no)no.textContent=n+"."})};
@@ -527,6 +598,12 @@ function initPairDrag(){
     const mod=e.shiftKey||e.ctrlKey||e.metaKey;
     const it=e.target.closest("[data-pi]");if(!it||e.target.closest("input,button,textarea,[contenteditable],.grip"))return;
     const pi=+it.dataset.pi,ord=pairOrder(root);
+    if(!mod&&CLIP){
+      e.preventDefault();e.stopImmediatePropagation();
+      const ids=(PAIRS[pi]||[]).filter(x=>x!=null),cutRow=CLIP.mode==="cut"&&ids.some(id=>CLIP.pairs.flat().includes(id));
+      const same=PTARGET&&ids.some(id=>PTARGET.includes(id));
+      PTARGET=(cutRow||same)?null:ids;paintSel(root);return
+    }
     if(!mod){
       // 선택된 줄을 그냥 다시 누르면 선택 취소
       if(!pairSel(pi))return;
@@ -632,7 +709,7 @@ function delAll(){
 }
 function exportX(){
   if(!window.XLSX){alert("엑셀 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.");return}
-  const l=[...cards].sort((a,b)=>a.id-b.id),seen=new Set(),rows=[["앞면","뒷면","폴더"]],k=(d,x,y)=>d+"\u0001"+x+"\u0001"+y;
+  const l=[...cards].sort(canonCmp()),seen=new Set(),rows=[["앞면","뒷면","폴더"]],k=(d,x,y)=>d+"\u0001"+x+"\u0001"+y;
   for(const c of l){const d=fd(c);if(seen.has(k(d,c.back,c.front)))continue;seen.add(k(d,c.front,c.back));rows.push([c.front,c.back,d])}
   const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:32},{wch:32},{wch:12}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"cards");XLSX.writeFile(wb,"영어학습_카드.xlsx")
@@ -648,12 +725,18 @@ function addCard(){
 }
 const isKo=c=>/[가-힣]/.test(c.front);
 const rh=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const ordv=c=>c.ord!=null?c.ord:1e15;
+function canonCmp(){
+  const m=new Map();folders().forEach((f,i)=>m.set(f,i));
+  const fi=c=>{const v=m.get(fd(c));return v==null?1e6:v};
+  return(x,y)=>fi(x)-fi(y)||ordv(x)-ordv(y)||((x.ord!=null&&y.ord!=null&&isKo(x)!==isKo(y))?(isKo(x)?-1:1):0)||x.id-y.id
+}
 function sortCards(a,f){
   const m=(S.lsort||{})[f]||"input";
   if(m==="alpha")return a.sort((x,y)=>x.front.localeCompare(y.front,undefined,{sensitivity:"base",numeric:true})||x.id-y.id);
-  if(m==="manual")return a.sort((x,y)=>(x.ord!=null?x.ord:1e15)-(y.ord!=null?y.ord:1e15)||x.id-y.id);
+  if(m==="manual"||m==="input")return a.sort(canonCmp());
   if(m==="random"){const sd=String(((S.lseed||{})[f])||0);return a.sort((x,y)=>rh(sd+":"+x.id)-rh(sd+":"+y.id))}
-  return a.sort((x,y)=>x.id-y.id)
+  return a.sort(canonCmp())
 }
 function setLsort(v){S.lsort=S.lsort||{};S.lsort[cur]=v;if(v==="random"){S.lseed=S.lseed||{};S.lseed[cur]=Math.floor(Math.random()*1e9)}save();render()}
 function reshuffle(){S.lseed=S.lseed||{};S.lseed[cur]=Math.floor(Math.random()*1e9);save();render()}
