@@ -74,15 +74,30 @@ input.ck{width:22px;height:22px;margin:0;padding:0;flex:none;accent-color:var(--
 main.wide{max-width:960px}
 .cols{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:0}.cols>*{min-width:0}
 .cols{align-items:stretch}
-@media (max-width:700px){
+@media (max-width:700px) and (orientation:portrait){
   .cols{grid-template-columns:1fr}
   .cl-h,.cr-h{margin-bottom:2px}
   .item.ph{display:none}
   .cr{margin-left:18px;padding-left:8px;border-left:3px solid var(--ac);margin-bottom:6px}
   .cr:not(.ph)+.cl,.cr+.cl{margin-top:2px}
 }
+@media (orientation:landscape) and (max-height:600px){
+  main,main.wide{max-width:none;padding:8px 14px}
+  .box{padding:12px}
+  .cols{grid-template-columns:1fr 1fr;column-gap:12px}
+  .item{padding:6px 0;gap:6px}
+  .item p{font-size:14px}.item .sub{font-size:11px}
+  .grip{width:24px;height:32px}
+  .item .no{min-width:22px;font-size:13px}
+  .pctip{display:none!important}
+  h1{font-size:18px;margin:0 0 8px}
+  nav{margin-bottom:10px}
+}
 .item.ph{border-bottom-color:transparent}.item .nopair{color:var(--mut);font-size:12px;opacity:.55;padding-left:34px}
-.grip{flex:none;touch-action:none;cursor:grab;color:var(--mut);font-size:15px;letter-spacing:-3px;padding:8px 6px 8px 0;margin-right:2px;user-select:none;-webkit-user-select:none;line-height:1}
+.grip{flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:38px;margin:0 2px 0 -4px;border-radius:9px;touch-action:none;cursor:grab;color:var(--mut);opacity:.75;user-select:none;-webkit-user-select:none;transition:background .15s,color .15s,opacity .15s}
+.grip:hover{background:var(--gray);color:var(--ac);opacity:1}.grip:active{cursor:grabbing;background:var(--ac);color:#fff;opacity:1}
+.item.psel{background:rgba(59,110,245,.10);box-shadow:inset 3px 0 0 var(--ac)}
+.pctip{display:none;margin:0 0 10px;font-size:12px;color:var(--mut)}@media (hover:hover) and (pointer:fine){.pctip{display:block}}
 .item .sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .note{border:1px solid var(--ac);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .fbar{background:var(--gray);border:1px solid var(--bd);border-bottom:3px solid var(--mut);border-radius:10px 10px 0 0;padding:10px 10px 4px}
@@ -96,7 +111,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v7 (직접 정렬)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v12 (가로 보기)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -441,7 +456,7 @@ function vList(){
   if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
   const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(S.lsort||{})[cur]||"input";
   const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
-  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="끌어서 한영·영한 쌍으로 순서 이동">⋮⋮</span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
+  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="압정핀을 잡고 끌어서 한영·영한 쌍으로 순서 이동"><svg width="17" height="21" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true"><rect x="4" y="1.2" width="10" height="3" rx="1.4"/><path d="M6.1 4.2L7.1 10.8H10.9L11.9 4.2Z"/><rect x="4.6" y="10.6" width="8.8" height="2.2" rx="1.1"/><path d="M9 12.8V20.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
   const nz=t=>String(t).replace(/\s+/g," ").trim();
   const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set();
   const nn=t=>String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g,"");
@@ -467,7 +482,7 @@ function vList(){
   const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b],i)=>cell(a,i+1,"cl",b)+cell(b,i+1,"cr",a)).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순"],["manual","직접 정렬"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button>${unp.length?`<button class="mini" onclick="mkMissing()">➕ 짝 없는 ${unp.length}장의 반대 방향 만들기</button>`:""}</div>`;
-  $("#view").innerHTML=h+col()+`</div></div>`;initDrag();initPairDrag()
+  $("#view").innerHTML=h+`<p class="pctip">💡 Shift+클릭으로 여러 쌍을 한꺼번에 선택(Ctrl+클릭은 하나씩)한 뒤 압정핀 아이콘을 끌면 함께 이동해요 · 선택한 줄을 다시 누르면 취소돼요</p><div id="selhint" class="note" style="display:none"></div>`+col()+`</div></div>`;initDrag();initPairDrag()
 }
 
 let MISS=[];
@@ -487,41 +502,76 @@ function savePairOrder(order){
   S.lsort=S.lsort||{};S.lsort[cur]="manual";
   save();render()
 }
+let SELIDS=new Set(),SELCUR=null,SELANCH=null;
+const pairOrder=root=>{const o=[];root.querySelectorAll("[data-pi]").forEach(e=>{const p=+e.dataset.pi;if(o[o.length-1]!==p)o.push(p)});return o};
+const pairSel=pi=>(PAIRS[pi]||[]).some(id=>id!=null&&SELIDS.has(id));
+const selPair=(pi,on)=>(PAIRS[pi]||[]).forEach(id=>{if(id!=null){on?SELIDS.add(id):SELIDS.delete(id)}});
+function paintSel(root){
+  root.querySelectorAll("[data-pi]").forEach(e=>e.classList.toggle("psel",pairSel(+e.dataset.pi)));
+  const h=document.querySelector("#selhint");if(!h)return;
+  const n=pairOrder(root).filter(pairSel).length;h.style.display=n?"flex":"none";
+  if(n)h.innerHTML=`<span style="flex:1">✅ ${n}쌍 선택됨 · 압정핀 아이콘을 끌면 함께 이동해요 · 선택한 줄을 다시 누르면 취소돼요</span><button class="mini" onclick="clearSel()">선택 해제</button>`
+}
+function clearSel(){SELIDS.clear();SELANCH=null;const r=document.querySelector(".cols");if(r)paintSel(r)}
 function initPairDrag(){
   const root=document.querySelector(".cols");if(!root)return;
+  if(SELCUR!==cur){SELIDS.clear();SELANCH=null;SELCUR=cur}
+  paintSel(root);
+  if(!window.__escSel){window.__escSel=1;document.addEventListener("keydown",e=>{if(e.key==="Escape")clearSel()})}
   const members=pi=>[...root.querySelectorAll('[data-pi="'+pi+'"]')];
   const vis=e=>e.getBoundingClientRect().height>0;
   const renum=()=>{let last=null,n=0;root.querySelectorAll("[data-pi]").forEach(e=>{const p=e.dataset.pi;if(p!==last){n++;last=p}const no=e.querySelector(".no");if(no)no.textContent=n+"."})};
+  // Shift+클릭: 범위 선택 / Ctrl(⌘)+클릭: 하나씩 선택·해제
+  root.addEventListener("mousedown",e=>{if((e.shiftKey||e.ctrlKey||e.metaKey)&&e.target.closest("[data-pi]")&&!e.target.closest("input,button,[contenteditable]"))e.preventDefault()});
+  root.addEventListener("click",e=>{
+    const mod=e.shiftKey||e.ctrlKey||e.metaKey;
+    const it=e.target.closest("[data-pi]");if(!it||e.target.closest("input,button,textarea,[contenteditable],.grip"))return;
+    const pi=+it.dataset.pi,ord=pairOrder(root);
+    if(!mod){
+      // 선택된 줄을 그냥 다시 누르면 선택 취소
+      if(!pairSel(pi))return;
+      e.preventDefault();e.stopImmediatePropagation();selPair(pi,false);SELANCH=null;paintSel(root);return
+    }
+    e.preventDefault();e.stopImmediatePropagation();
+    if(pairSel(pi))selPair(pi,false);                       // 선택된 줄을 Shift/Ctrl+클릭 → 취소
+    else if(e.shiftKey){const a=SELANCH!=null&&ord.includes(SELANCH)?SELANCH:pi,i1=ord.indexOf(a),i2=ord.indexOf(pi);ord.slice(Math.min(i1,i2),Math.max(i1,i2)+1).forEach(p=>selPair(p,true))}
+    else selPair(pi,true);
+    SELANCH=pi;paintSel(root)
+  },true);
   root.querySelectorAll(".grip").forEach(g=>{
     g.addEventListener("pointerdown",e=>{
-      if(e.button>0)return;e.preventDefault();
-      const item=g.closest("[data-pi]"),pi=item.dataset.pi;
+      if(e.button>0||e.shiftKey||e.ctrlKey||e.metaKey)return;e.preventDefault();
+      const item=g.closest("[data-pi]"),pi=+item.dataset.pi;
+      let group;if(pairSel(pi))group=pairOrder(root).filter(pairSel);else{group=[pi];SELIDS.clear();SELANCH=null;paintSel(root)}
+      const gEls=()=>[...root.querySelectorAll("[data-pi]")].filter(x=>group.includes(+x.dataset.pi));
       const sx=e.clientX,sy=e.clientY,pid=e.pointerId;let drag=false,ghost=null,ox=0,oy=0,lastY=sy,timer=null;
       const move=ev=>{
         if(ev.pointerId!==pid)return;lastY=ev.clientY;
         if(!drag){if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;
           drag=true;const r=item.getBoundingClientRect();ox=sx-r.left;oy=sy-r.top;
-          ghost=item.cloneNode(true);ghost.style.cssText="position:fixed;z-index:99;pointer-events:none;opacity:.92;box-shadow:0 4px 14px rgba(0,0,0,.3);background:var(--card);left:0;top:0;width:"+r.width+"px";document.body.appendChild(ghost);
-          members(pi).forEach(m=>m.style.opacity=".3");
+          ghost=item.cloneNode(true);ghost.style.cssText="position:fixed;z-index:99;pointer-events:none;opacity:.94;box-shadow:0 6px 18px rgba(0,0,0,.3);background:var(--card);left:0;top:0;width:"+r.width+"px";
+          if(group.length>1){const b=document.createElement("span");b.textContent=group.length+"쌍";b.style.cssText="position:absolute;top:-9px;right:-6px;background:var(--ac);color:#fff;border-radius:12px;padding:2px 9px;font-size:12px;font-weight:700";ghost.appendChild(b)}
+          document.body.appendChild(ghost);
+          gEls().forEach(m=>m.style.opacity=".3");
           timer=setInterval(()=>{if(lastY<70)scrollBy(0,-14);else if(lastY>innerHeight-70)scrollBy(0,14)},30)}
         ev.preventDefault();
         ghost.style.transform="translate("+(ev.clientX-ox)+"px,"+(ev.clientY-oy)+"px)";
         ghost.style.display="none";const t=document.elementFromPoint(ev.clientX,ev.clientY);ghost.style.display="";
         const o=t&&t.closest&&t.closest("[data-pi]");
-        if(!o||!root.contains(o)||o.dataset.pi===pi)return;
-        const mem=members(o.dataset.pi),v=mem.filter(vis),top=Math.min(...v.map(e=>e.getBoundingClientRect().top)),bot=Math.max(...v.map(e=>e.getBoundingClientRect().bottom));
-        const mine=members(pi),before=ev.clientY<(top+bot)/2;
-        const ref=before?mem[0]:mem[mem.length-1].nextSibling;
-        mine.forEach(m=>root.insertBefore(m,ref));
+        if(!o||!root.contains(o)||group.includes(+o.dataset.pi))return;
+        const mem=members(o.dataset.pi),v=mem.filter(vis);if(!v.length)return;
+        const top=Math.min(...v.map(e=>e.getBoundingClientRect().top)),bot=Math.max(...v.map(e=>e.getBoundingClientRect().bottom));
+        let ref=ev.clientY<(top+bot)/2?mem[0]:mem[mem.length-1].nextSibling;
+        while(ref&&ref.dataset&&group.includes(+ref.dataset.pi))ref=ref.nextSibling;
+        gEls().forEach(m=>root.insertBefore(m,ref));
         renum()
       };
       const up=ev=>{
         if(ev.pointerId!==pid)return;
         removeEventListener("pointermove",move);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);
         clearInterval(timer);if(!drag)return;
-        ghost.remove();members(pi).forEach(m=>m.style.opacity="");
-        const order=[];root.querySelectorAll("[data-pi]").forEach(e=>{const p=+e.dataset.pi;if(order[order.length-1]!==p)order.push(p)});
-        savePairOrder(order)
+        ghost.remove();gEls().forEach(m=>m.style.opacity="");
+        savePairOrder(pairOrder(root))
       };
       addEventListener("pointermove",move,{passive:false});addEventListener("pointerup",up);addEventListener("pointercancel",up)
     })
