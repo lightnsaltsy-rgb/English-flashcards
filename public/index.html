@@ -114,7 +114,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v15 (붙여넣기 표시)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v16 (순서 저장 보강)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -132,7 +132,12 @@ const setStat=t=>{const e=document.querySelector("#sync");if(e)e.textContent=t};
 async function hash(x){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("srs:"+x));return[...new Uint8Array(b)].map(v=>v.toString(16).padStart(2,"0")).join("")}
 function mergeState(a,b){
   const m=new Map();
-  for(const c of[...a.cards,...b.cards]){const l=m.get(c.id);if(!l||(c.upd||0)>(l.upd||0))m.set(c.id,c)}
+  for(const c of[...a.cards,...b.cards]){
+    const l=m.get(c.id);if(!l){m.set(c.id,c);continue}
+    let w=(c.upd||0)>(l.upd||0)?c:l;const o=w===c?l:c;
+    if((o.ordT||0)>(w.ordT||0))w={...w,ord:o.ord,ordT:o.ordT,upd:(w.upd||0)+1};   // 순서는 따로 최신 것을 유지
+    m.set(c.id,w)
+  }
   const dead={...(a.S.dead||{})};for(const k in (b.S.dead||{}))dead[k]=Math.max(dead[k]||0,b.S.dead[k]);
   for(const k in dead){const c=m.get(Number(k));if(c&&(c.upd||0)<dead[k])m.delete(Number(k))}
   const S=(b.S.upd||0)>(a.S.upd||0)?{...b.S}:{...a.S};S.dead=dead;
@@ -504,9 +509,10 @@ function mkMissing(){
 }
 
 let PAIRS=[];
+const bump=(c,t)=>{c.upd=Math.max(t,(c.upd||0)+1)};
 function setOrd(c,k,t){
-  if(c.ord!==k){c.ord=k;c.upd=t}
-  const m=mateOf(c);if(m&&m.deck===XF&&m.ord!==k){m.ord=k;m.upd=t}
+  if(c.ord!==k){c.ord=k;c.ordT=t;bump(c,t)}
+  const m=mateOf(c);if(m&&m.deck===XF&&m.ord!==k){m.ord=k;m.ordT=t;bump(m,t)}
 }
 function savePairOrder(order){
   const t=Date.now();let k=0;
@@ -555,7 +561,7 @@ function pasteClip(){
       if(!real)return true;
       const mv=p.map(id=>cards.find(x=>x.id===id)).filter(c=>c.deck!==cur&&c.deck!==XF&&c.deck!==LF);
       if(mv.some(c=>cards.some(x=>x!==c&&nk(x)===nk({deck:cur,front:c.front,back:c.back})))){skipped++;return false}   // 같은 카드가 이미 있으면 옮기지 않음
-      mv.forEach(c=>{c.deck=cur;c.upd=t});return true
+      mv.forEach(c=>{c.deck=cur;bump(c,t)});return true
     });
     if(skipped)alert(skipped+"쌍은 이 폴더에 똑같은 카드가 이미 있어서 옮기지 않았어요.")
   }else{
