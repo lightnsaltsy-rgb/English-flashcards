@@ -97,6 +97,10 @@ main.wide{max-width:960px}
 .grip{flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:38px;margin:0 2px 0 -4px;border-radius:9px;touch-action:none;cursor:grab;color:var(--mut);opacity:.75;user-select:none;-webkit-user-select:none;transition:background .15s,color .15s,opacity .15s}
 .grip:hover{background:var(--gray);color:var(--ac);opacity:1}.grip:active{cursor:grabbing;background:var(--ac);color:#fff;opacity:1}
 .item.pcut{opacity:.4}
+.item.dup{background:rgba(244,114,182,.30);box-shadow:inset 4px 0 0 #ec4899}
+.dupi{display:block;font-size:12px;line-height:1.35;color:#be185d;font-weight:600;margin-top:2px;white-space:normal}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dupi{color:#f9a8d4}}
+:root[data-theme="dark"] .dupi{color:#f9a8d4}
 .item.pnew{background:rgba(125,211,252,.38);box-shadow:inset 4px 0 0 #38bdf8}
 .item.ptarget{box-shadow:inset 0 -4px 0 var(--ac);background:rgba(59,110,245,.07)}
 .item.psel{background:rgba(59,110,245,.10);box-shadow:inset 3px 0 0 var(--ac)}
@@ -114,7 +118,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v19 (부분 선택)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v20 (같은 영어 문장 표시)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -478,16 +482,8 @@ function tp(id){
   picksChanged();save();render()
 }
 function grp(ko,on){cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko).forEach(c=>{const i=S.pick.indexOf(c.id);if(on&&i<0)S.pick.push(c.id);if(!on&&i>=0)S.pick.splice(i,1)});picksChanged();save();render()}   // 열 단위 선택·해제: 짝 카드는 건드리지 않음
-function vList(){
-  const tools=`<div style="margin-bottom:14px"><label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid var(--bd);color:var(--fg)"><input type="checkbox" style="width:auto;margin:0" ${S.rev?"checked":""} onchange="setRev(this.checked)">엑셀로 가져올 때 반대 방향 카드도 함께 만들기</label><div><button class="sm" onclick="exp()">백업 저장</button><button class="sm" onclick="$('#imp').click()">백업 불러오기</button><button class="sm" onclick="$('#xl').click()">엑셀 가져오기</button><button class="sm" onclick="exportX()">엑셀 내보내기</button><button class="sm" style="color:var(--r1)" onclick="delAll()">전체 삭제</button><input id="imp" type="file" accept=".json" hidden onchange="imp(this.files[0]);this.value=''"><input id="xl" type="file" accept=".xlsx,.xls,.csv" hidden onchange="impX(this.files[0]);this.value=''"><p style="margin:8px 0 0;font-size:12px;color:var(--mut)">엑셀 형식: A열 앞면, B열 뒷면, C열 폴더(선택). 첫 줄이 '앞면/뒷면' 제목이면 자동으로 건너뛰고, 이미 있는 카드는 건너뛰어요.</p></div></div>`;
-  const fs=folders(),all=[ALLV,XF,...fs];
-  if(!all.includes(cur))cur=fs[0]||XF;
-  FN=all;
-  let h=`<div class="box"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="flex:1;font-size:12px;color:var(--mut)">폴더 버튼을 꾹 눌러 끌면 순서를 바꿀 수 있어요 (❌ 잊음 고정)</span><button class="mini" onclick="openT=!openT;render()">⚙ 관리 ${openT?"▴":"▾"}</button></div>${openT?tools:""}<div class="fbar"><div class="chips" id="chipbar">${all.map((n,i)=>`<button class="chip ${n===cur?"on":""}" ${n===XF||n===ALLV?"":`data-f="${i}" style="touch-action:none;cursor:grab"`} onclick="cur=FN[${i}];eid=null;xid=null;render()">${n===ALLV?"📚 전체":n===XF?"❌ 잊음":n===LF?"📖 학습중":"📁 "+esc(n)}</button>`).join("")}</div></div><div class="fopen">`;
-  if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
-  const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(m=>m==="manual"?"input":m)((S.lsort||{})[cur]||"input");
-  const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
-  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="압정핀을 잡고 끌어서 한영·영한 쌍으로 순서 이동"><svg width="17" height="21" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true"><rect x="4" y="1.2" width="10" height="3" rx="1.4"/><path d="M6.1 4.2L7.1 10.8H10.9L11.9 4.2Z"/><rect x="4.6" y="10.6" width="8.8" height="2.2" rx="1.1"/><path d="M9 12.8V20.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span></div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
+function listPairs(name){
+  const l=sortCards(cards.filter(c=>name===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===name),name),lm=(m=>m==="manual"?"input":m)((S.lsort||{})[name]||"input");
   const nz=t=>String(t).replace(/\s+/g," ").trim();
   const L=l.filter(isKo),R=l.filter(c=>!isKo(c)),used=new Set();
   const nn=t=>String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g,"");
@@ -509,11 +505,62 @@ function vList(){
     const ky=([a,b])=>Math.min(a?ordv(a):1e15,b?ordv(b):1e15);
     pairs.sort((p,q)=>fiP(p)-fiP(q)||ky(p)-ky(q))
   }
+  return{pairs,L,R}
+}
+// ── 같은 영어 문장 찾기 (폴더가 달라도, 같은 폴더 안에서 번호가 달라도 표시) ──
+const engKey=c=>nnk(isKo(c)?c.back:c.front);
+let DUP=null;
+function buildDup(){
+  const idx=new Map(),ids=new Map();
+  [...folders(),XF].forEach(f=>{
+    listPairs(f).pairs.forEach(([a,b],i)=>{
+      const k=engKey(b||a);if(!k)return;
+      const e={f,n:i+1,key:k,ids:[a&&a.id,b&&b.id].filter(x=>x!=null)};
+      if(!idx.has(k))idx.set(k,[]);idx.get(k).push(e);
+      e.ids.forEach(id=>ids.set(id,e))
+    })
+  });
+  const byId=new Map(cards.map(c=>[c.id,c]));DUP={idx,ids,byId,memo:new Map()};return DUP
+}
+// 한쪽은 폴더에, 짝은 잊음 폴더로 갈라진 같은 카드 쌍은 중복으로 보지 않음
+function splitPair(e,x){
+  if(e.f===x.f||e.ids.length!==1||x.ids.length!==1)return false;
+  const a=DUP.byId.get(e.ids[0]),b=DUP.byId.get(x.ids[0]);
+  return !!(a&&b&&isKo(a)!==isKo(b)&&fd(a)===fd(b))
+}
+function dupFor(c){
+  if(!DUP||!c)return[];
+  if(DUP.memo.has(c.id))return DUP.memo.get(c.id);
+  let r=[];const e=DUP.ids.get(c.id);
+  if(e)r=DUP.idx.get(e.key).filter(x=>x!==e&&!splitPair(e,x));
+  else if(c.deck===XF||c.deck===LF){const k=engKey(c);if(k){const m=mateOf(c);r=(DUP.idx.get(k)||[]).filter(x=>!(m&&x.ids.includes(m.id)))}}
+  DUP.memo.set(c.id,r);return r
+}
+const dupLabel=ds=>ds.slice(0,6).map(e=>(e.f===XF?"❌ 잊음":"📁 "+e.f)+" "+e.n+"번").join(" · ")+(ds.length>6?" 외 "+(ds.length-6)+"곳":"");
+const dupTag=c=>{const d=dupFor(c);return d.length?`<span class="dupi">🔁 같은 영어 문장 · ${esc(dupLabel(d))}</span>`:""};
+function dupReport(list){
+  buildDup();const seen=new Set(),out=[];
+  list.forEach(c=>{if(!cards.includes(c))return;const d=dupFor(c),k=engKey(c);if(!d.length||seen.has(k))return;seen.add(k);out.push([c,d])});
+  if(!out.length)return"";
+  return"\n\n🩷 같은 영어 문장이 이미 있는 "+out.length+"개 (카드 목록에서 분홍색으로 표시돼요):\n"+out.slice(0,8).map(([c,d])=>"· "+(isKo(c)?c.back:c.front).split("\n")[0]+" → "+dupLabel(d)).join("\n")+(out.length>8?"\n… 외 "+(out.length-8)+"개":"")
+}
+function vList(){
+  const tools=`<div style="margin-bottom:14px"><label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid var(--bd);color:var(--fg)"><input type="checkbox" style="width:auto;margin:0" ${S.rev?"checked":""} onchange="setRev(this.checked)">엑셀로 가져올 때 반대 방향 카드도 함께 만들기</label><div><button class="sm" onclick="exp()">백업 저장</button><button class="sm" onclick="$('#imp').click()">백업 불러오기</button><button class="sm" onclick="$('#xl').click()">엑셀 가져오기</button><button class="sm" onclick="exportX()">엑셀 내보내기</button><button class="sm" style="color:var(--r1)" onclick="delAll()">전체 삭제</button><input id="imp" type="file" accept=".json" hidden onchange="imp(this.files[0]);this.value=''"><input id="xl" type="file" accept=".xlsx,.xls,.csv" hidden onchange="impX(this.files[0]);this.value=''"><p style="margin:8px 0 0;font-size:12px;color:var(--mut)">엑셀 형식: A열 앞면, B열 뒷면, C열 폴더(선택). 첫 줄이 '앞면/뒷면' 제목이면 자동으로 건너뛰고, 이미 있는 카드는 건너뛰어요.</p></div></div>`;
+  const fs=folders(),all=[ALLV,XF,...fs];
+  if(!all.includes(cur))cur=fs[0]||XF;
+  FN=all;
+  let h=`<div class="box"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="flex:1;font-size:12px;color:var(--mut)">폴더 버튼을 꾹 눌러 끌면 순서를 바꿀 수 있어요 (❌ 잊음 고정)</span><button class="mini" onclick="openT=!openT;render()">⚙ 관리 ${openT?"▴":"▾"}</button></div>${openT?tools:""}<div class="fbar"><div class="chips" id="chipbar">${all.map((n,i)=>`<button class="chip ${n===cur?"on":""}" ${n===XF||n===ALLV?"":`data-f="${i}" style="touch-action:none;cursor:grab"`} onclick="cur=FN[${i}];eid=null;xid=null;render()">${n===ALLV?"📚 전체":n===XF?"❌ 잊음":n===LF?"📖 학습중":"📁 "+esc(n)}</button>`).join("")}</div></div><div class="fopen">`;
+  if(!cards.length&&!fs.length){$("#view").innerHTML=h+`<div class="empty">카드가 없어요 · '카드 추가'에서 폴더를 만들어 보세요</div></div></div>`;initDrag();return}
+  const l=sortCards(cards.filter(c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur),cur),lm=(m=>m==="manual"?"input":m)((S.lsort||{})[cur]||"input");
+  const np=S.pick.filter(id=>cards.some(c=>c.id===id)).length;
+  const rw=(c,n)=>eid===c.id?`<div class="item" style="display:block">${editForm(c)}</div>`:`<div class="item" style="flex-wrap:wrap"><span class="grip" title="압정핀을 잡고 끌어서 한영·영한 쌍으로 순서 이동"><svg width="17" height="21" viewBox="0 0 18 22" fill="currentColor" aria-hidden="true"><rect x="4" y="1.2" width="10" height="3" rx="1.4"/><path d="M6.1 4.2L7.1 10.8H10.9L11.9 4.2Z"/><rect x="4.6" y="10.6" width="8.8" height="2.2" rx="1.1"/><path d="M9 12.8V20.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></span><input type="checkbox" class="ck" ${S.pick.includes(c.id)?"checked":""} onchange="tp(${c.id})"><span class="no">${n}.</span><div style="cursor:pointer" onclick="xid=xid===${c.id}?null:${c.id};render()"><p>${esc(c.front.split("\n")[0])}</p><span class="sub">${esc(c.back.split("\n")[0])} · ${c.st==="o"?"⭕":c.st==="x"?"❌ "+esc(c.home||""):"안 봄"}</span>${dupTag(c)}</div><button class="x" title="삭제" onclick="delCard(${c.id})">✕</button>${xid===c.id?`<div style="flex:none;width:100%;display:flex;gap:6px;padding-left:84px"><button class="mini" onclick="eid=${c.id};xid=null;render()">✎ 편집</button></div>`:""}</div>`;
+  const nz=t=>String(t).replace(/\s+/g," ").trim();
+  buildDup();const {pairs,L,R}=listPairs(cur);
   PAIRS=pairs.map(([a,b])=>[a?a.id:null,b?b.id:null]);
   const allK=new Map();cards.forEach(c=>{const k=nk(c);if(!allK.has(k))allK.set(k,c)});
   const mate=c=>allK.get(nk({deck:fd(c),front:c.back,back:c.front}));
   const unp=cur===XF?[]:pairs.flatMap(([a,b])=>a&&!b?[a]:b&&!a?[b]:[]).filter(c=>!mate(c));MISS=unp.map(c=>c.id);
-  const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+'" data-pi="'+(n-1)+'"');const m=o&&mate(o);return `<div class="item ph ${cls}" data-pi="${n-1}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
+  const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+(dupFor(c).length?' dup':'')+'" data-pi="'+(n-1)+'"');const m=o&&mate(o);return `<div class="item ph ${cls}" data-pi="${n-1}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
   const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" title="이 열의 카드만 모두 체크 (짝 카드는 선택하지 않아요)" onclick="grp(${ko},true)">부분 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
   const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b],i)=>cell(a,i+1,"cl",b)+cell(b,i+1,"cr",a)).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순(내가 정한 순서)"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
@@ -749,8 +796,9 @@ function addCard(){
   let d=addF||"기본";if(d===XF||d===LF)d="기본";mkF(d);
   if(!f||!b)return;
   const t=Date.now(),id=t+Math.random()*.5,mk=(i,x,y,xr,yr)=>{const c={id:i,front:x,back:y,deck:d,ef:2.5,int:0,reps:0,due:t,upd:t};if(xr.some(r=>r[1]))c.fr=xr;if(yr.some(r=>r[1]))c.br=yr;return c};
-  cards.push(mk(id,f,b,Fr,Br));if(S.rev)cards.push(mk(id+.001,b,f,Br,Fr));
-  save();$("#f").innerHTML="";$("#b").innerHTML="";$("#msg").textContent="✓ "+(S.rev?"2장":"1장")+" 추가됨 → 📁 "+d;$("#f").focus()
+  const n1=mk(id,f,b,Fr,Br),n2=S.rev?mk(id+.001,b,f,Br,Fr):null;cards.push(n1);if(n2)cards.push(n2);
+  buildDup();const dd=dupFor(n1);
+  save();$("#f").innerHTML="";$("#b").innerHTML="";$("#msg").innerHTML=esc("✓ "+(S.rev?"2장":"1장")+" 추가됨 → 📁 "+d)+(dd.length?`<br><span style="display:inline-block;margin-top:6px;padding:4px 8px;border-radius:8px;background:rgba(244,114,182,.30);border-left:4px solid #ec4899;color:inherit">🔁 같은 영어 문장이 이미 있어요 · ${esc(dupLabel(dd))}</span>`:"");$("#f").focus()
 }
 const isKo=c=>/[가-힣]/.test(c.front);
 const rh=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
@@ -818,8 +866,8 @@ function doImport(list,target,useC,rev){
   cards=cards.concat(fresh);
   mkF(target);fresh.forEach(c=>mkF(c.deck));
   cur=target;side=true;save();render();
-  const where=e=>e.deck===XF?"잊음 폴더":"'"+e.deck+"' 폴더",one=x=>x.split("\n")[0];
-  alert(fresh.length+"장을 '"+target+"' 폴더"+(useC?"(및 C열 폴더)":"")+"에 가져왔어요"+(rev?" (한→영 "+fresh.filter(isKo).length+"장 · 영→한 "+fresh.filter(c=>!isKo(c)).length+"장)":"")+(skip.length?"\n\n앱에 이미 같은 카드가 있어서 건너뛴 "+skip.length+"장:\n"+skip.slice(0,8).map(([c,e])=>"· "+one(c.front)+" → "+one(c.back)+" ("+where(e)+"에 있음)").join("\n")+(skip.length>8?"\n… 외 "+(skip.length-8)+"장":""):""))
+  const dupMsg=dupReport(fresh);const where=e=>e.deck===XF?"잊음 폴더":"'"+e.deck+"' 폴더",one=x=>x.split("\n")[0];
+  alert(fresh.length+"장을 '"+target+"' 폴더"+(useC?"(및 C열 폴더)":"")+"에 가져왔어요"+(rev?" (한→영 "+fresh.filter(isKo).length+"장 · 영→한 "+fresh.filter(c=>!isKo(c)).length+"장)":"")+(skip.length?"\n\n앱에 이미 같은 카드가 있어서 건너뛴 "+skip.length+"장:\n"+skip.slice(0,8).map(([c,e])=>"· "+one(c.front)+" → "+one(c.back)+" ("+where(e)+"에 있음)").join("\n")+(skip.length>8?"\n… 외 "+(skip.length-8)+"장":""):"")+dupMsg)
 }
 function imp(f){
   if(!f)return;const r=new FileReader();
