@@ -114,7 +114,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v16 (순서 저장 보강)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v19 (부분 선택)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -446,6 +446,19 @@ function delPicked(){
   const t=Date.now();ids.forEach(id=>{S.dead[id]=t});
   cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));S.pick=[];picksChanged();save();render()
 }
+const inView=c=>cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur;
+function selAll(on){
+  cards.filter(inView).forEach(c=>{const i=S.pick.indexOf(c.id);if(on&&i<0)S.pick.push(c.id);if(!on&&i>=0)S.pick.splice(i,1)});
+  picksChanged();save();render()
+}
+function delView(){
+  const v=cards.filter(c=>inView(c)&&S.pick.includes(c.id));
+  if(!v.length){alert("먼저 삭제할 카드를 체크해 주세요.");return}
+  const k=v.filter(isKo).length;
+  if(!confirm("체크한 카드 "+v.length+"장(한 → 영 "+k+"장, 영 → 한 "+(v.length-k)+"장)을 삭제할까요?\n되돌릴 수 없고, 동기화된 다른 기기에서도 삭제돼요.\n(먼저 '백업 저장'으로 저장해 두면 안전해요)"))return;
+  const ids=new Set(v.map(c=>c.id)),t=Date.now();ids.forEach(id=>{S.dead[id]=t});
+  cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));S.pick=S.pick.filter(id=>!ids.has(id));picksChanged();save();render()
+}
 function delGrp(ko){
   const ids=new Set(cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko&&S.pick.includes(c.id)).map(c=>c.id));
   if(!ids.size){alert("먼저 삭제할 카드를 체크해 주세요.");return}
@@ -453,8 +466,18 @@ function delGrp(ko){
   const t=Date.now();ids.forEach(id=>{S.dead[id]=t});
   cards=cards.filter(c=>!ids.has(c.id));queue=queue.filter(id=>!ids.has(id));S.pick=S.pick.filter(id=>!ids.has(id));picksChanged();save();render()
 }
-function tp(id){const i=S.pick.indexOf(id);i<0?S.pick.push(id):S.pick.splice(i,1);picksChanged();save();render()}
-function grp(ko,on){cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko).forEach(c=>{const i=S.pick.indexOf(c.id);if(on&&i<0)S.pick.push(c.id);if(!on&&i>=0)S.pick.splice(i,1)});picksChanged();save();render()}
+// 체크하면 짝 카드도 같이 체크돼요. 해제는 눌린 카드(또는 그 열)만 따로 해제돼요.
+function setPick(c,on){
+  const ids=[c.id],m=mateOf(c);if(m&&m.deck!==XF&&m.deck!==LF)ids.push(m.id);
+  ids.forEach(id=>{const i=S.pick.indexOf(id);if(on&&i<0)S.pick.push(id);if(!on&&i>=0)S.pick.splice(i,1)})
+}
+function tp(id){
+  const c=cards.find(x=>x.id===id);if(!c)return;
+  const i=S.pick.indexOf(id);
+  if(i<0)setPick(c,true);else S.pick.splice(i,1);
+  picksChanged();save();render()
+}
+function grp(ko,on){cards.filter(c=>(cur===ALLV?(c.deck!==XF&&c.deck!==LF):c.deck===cur)&&isKo(c)===ko).forEach(c=>{const i=S.pick.indexOf(c.id);if(on&&i<0)S.pick.push(c.id);if(!on&&i>=0)S.pick.splice(i,1)});picksChanged();save();render()}   // 열 단위 선택·해제: 짝 카드는 건드리지 않음
 function vList(){
   const tools=`<div style="margin-bottom:14px"><label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid var(--bd);color:var(--fg)"><input type="checkbox" style="width:auto;margin:0" ${S.rev?"checked":""} onchange="setRev(this.checked)">엑셀로 가져올 때 반대 방향 카드도 함께 만들기</label><div><button class="sm" onclick="exp()">백업 저장</button><button class="sm" onclick="$('#imp').click()">백업 불러오기</button><button class="sm" onclick="$('#xl').click()">엑셀 가져오기</button><button class="sm" onclick="exportX()">엑셀 내보내기</button><button class="sm" style="color:var(--r1)" onclick="delAll()">전체 삭제</button><input id="imp" type="file" accept=".json" hidden onchange="imp(this.files[0]);this.value=''"><input id="xl" type="file" accept=".xlsx,.xls,.csv" hidden onchange="impX(this.files[0]);this.value=''"><p style="margin:8px 0 0;font-size:12px;color:var(--mut)">엑셀 형식: A열 앞면, B열 뒷면, C열 폴더(선택). 첫 줄이 '앞면/뒷면' 제목이면 자동으로 건너뛰고, 이미 있는 카드는 건너뛰어요.</p></div></div>`;
   const fs=folders(),all=[ALLV,XF,...fs];
@@ -491,10 +514,10 @@ function vList(){
   const mate=c=>allK.get(nk({deck:fd(c),front:c.back,back:c.front}));
   const unp=cur===XF?[]:pairs.flatMap(([a,b])=>a&&!b?[a]:b&&!a?[b]:[]).filter(c=>!mate(c));MISS=unp.map(c=>c.id);
   const cell=(c,n,cls,o)=>{if(c)return rw(c,n).replace('class="item"','class="item '+cls+'" data-pi="'+(n-1)+'"');const m=o&&mate(o);return `<div class="item ph ${cls}" data-pi="${n-1}"><span class="nopair">${m?(m.deck===XF?"❌ 짝 카드는 잊음 폴더에 있어요":"짝 카드는 '"+esc(m.deck)+"' 폴더에 있어요"):"짝이 되는 카드 없음"}</span></div>`};
-  const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" onclick="grp(${ko},true)">전체 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
+  const head=(ko,t,cnt,cls)=>`<div class="${cls}" style="margin-bottom:6px"><b style="display:block;font-size:14px;margin-bottom:4px">${t} (${cnt})</b><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="mini" title="이 열의 카드만 모두 체크 (짝 카드는 선택하지 않아요)" onclick="grp(${ko},true)">부분 선택</button><button class="mini" onclick="grp(${ko},false)">해제</button><button class="mini" style="color:var(--r1)" onclick="delGrp(${ko})">삭제</button></div></div>`;
   const col=()=>`<div class="cols">${head(true,"한 → 영",L.length,"cl-h")}${head(false,"영 → 한",R.length,"cr-h")}${pairs.length?pairs.map(([a,b],i)=>cell(a,i+1,"cl",b)+cell(b,i+1,"cr",a)).join(""):'<div class="empty" style="grid-column:1/-1;padding:14px 0">없음</div>'}</div>`;
   h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><b style="flex:1">${cur===ALLV?"📚 전체":cur===XF?"❌ 잊음":cur===LF?"📖 학습중":"📁 "+esc(cur)}</b><select class="mini-sel" onchange="setLsort(this.value)">${[["input","입력순(내가 정한 순서)"],["alpha","알파벳순"],["random","랜덤"]].map(([v,t])=>`<option value="${v}" ${lm===v?"selected":""}>${t}</option>`).join("")}</select>${lm==="random"?`<button class="mini" onclick="reshuffle()">🔀 섞기</button>`:""}${cur===XF||cur===LF||cur===ALLV?"":`<button class="mini" onclick="renameF()">이름 변경</button>`}${cur===ALLV?"":`<button class="mini" style="color:var(--r1)" onclick="delF()">폴더 삭제</button>`}</div>`;
-  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button>${unp.length?`<button class="mini" onclick="mkMissing()">➕ 짝 없는 ${unp.length}장의 반대 방향 만들기</button>`:""}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="go" onclick="start(PL)">▶ 선택 카드 학습 (${np}장)</button><button class="mini" style="padding:7px 12px;font-size:13px" title="지금 폴더의 한영·영한 카드를 모두 체크" onclick="selAll(true)">전체 선택</button><button class="mini" style="padding:7px 12px;font-size:13px" title="지금 폴더의 한영·영한 카드를 모두 해제" onclick="selAll(false)">전체 해제</button><button class="mini" style="padding:7px 12px;font-size:13px;color:var(--r1)" title="지금 폴더에서 체크한 한영·영한 카드를 삭제" onclick="delView()">삭제</button>${unp.length?`<button class="mini" onclick="mkMissing()">➕ 짝 없는 ${unp.length}장의 반대 방향 만들기</button>`:""}</div>`;
   $("#view").innerHTML=h+`<p class="pctip">💡 Shift+클릭으로 여러 쌍을 한꺼번에 선택(Ctrl+클릭은 하나씩)한 뒤 압정핀 아이콘을 끌거나, Ctrl+X(잘라내기)·Ctrl+C(복사) 후 붙여넣을 줄을 클릭하고 Ctrl+V로 옮길 수 있어요</p><div id="selhint" class="note" style="display:none"></div>`+col()+`</div></div>`;initDrag();initPairDrag()
 }
 
