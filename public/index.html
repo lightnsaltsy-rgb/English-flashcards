@@ -263,21 +263,22 @@ function nxt(){
   const prev=queue[0];queue.shift();shown=false;eid=null;
   if(!queue.length&&ses&&ses.loop){
     let l=srcCards().filter(c=>dirOk(c,ses.opt.dir)&&!ses.done.includes(c.id));
-    if(l.length){queue=(ses.opt.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.round++}
+    if(l.length){queue=(ses.opt.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.rot=0;ses.round++}
   }
   render()
 }
 function endSes(){ses=null;queue=[];eid=null;render()}
 function hpush(extra){
   ses.hist=ses.hist||[];
-  const h={id:queue[0],queue:queue.slice(),round:ses.round,total:ses.total,xs:ses.xs.length,dn:ses.done.length,o:ses.o,x:ses.x,pick:S.pick.slice(),...extra};
+  const h={id:queue[0],queue:queue.slice(),round:ses.round,total:ses.total,rot:ses.rot||0,xs:ses.xs.length,dn:ses.done.length,o:ses.o,x:ses.x,pick:S.pick.slice(),...extra};
   ses.hist.push(h);if(ses.hist.length>100)ses.hist.shift();return h
 }
 function skip(){if(!ses||!queue.length)return;hpush({});nxt()}
 function back(){
   if(!ses)return;
   if(shown){shown=false;render();return}
-  const h=ses.hist&&ses.hist.pop();if(!h)return;
+  const h=ses.hist&&ses.hist.pop();
+  if(!h){if(queue.length>1){queue.unshift(queue.pop());ses.rot=(ses.rot||0)+1;shown=false;eid=null;render()}return}
   const restore=(cur,snap)=>{if(!cur)return;Object.keys(cur).forEach(k=>delete cur[k]);Object.assign(cur,snap);cur.upd=Date.now()};
   if(h.cs){
     let c=cards.find(x=>x.id===h.cs.id);
@@ -285,7 +286,7 @@ function back(){
     if(h.deadHad===undefined)delete S.dead[h.cs.id];else S.dead[h.cs.id]=h.deadHad;
     if(h.ds)restore(cards.find(x=>x.id===h.ds.id),h.ds)
   }
-  ses.xs.length=h.xs;ses.done.length=h.dn;ses.o=h.o;ses.x=h.x;ses.round=h.round;ses.total=h.total;
+  ses.xs.length=h.xs;ses.done.length=h.dn;ses.o=h.o;ses.x=h.x;ses.round=h.round;ses.total=h.total;ses.rot=h.rot||0;
   queue=h.queue;S.pick=h.pick;shown=true;eid=null;save();render()
 }
 function mark(ok){
@@ -411,9 +412,9 @@ function vStudy(){
   if(!ses)return vFolders();
   const c=cards.find(x=>x.id===queue[0]);
   if(!c)return vDone();
-  const canBack=!!(ses.hist&&ses.hist.length);
+  const canBack=!!(ses.hist&&ses.hist.length)||queue.length>1;
   const nx=ses.only?0:(ses.xs||[]).filter(id=>cards.some(x=>x.id===id&&x.deck===XF)).length;
-  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><b style="flex:1">${esc(ses.name)}</b><span style="color:var(--mut);font-size:13px">${ses.total-queue.length+1} / ${ses.total}</span>${nx?`<button class="sm" style="margin:0;color:var(--r1)" onclick="retry()">❌ 잊은 카드 다시 학습 (${nx})</button>`:""}<button class="sm" style="margin:0" onclick="endSes()">종료</button></div><div class="ctl" style="margin-bottom:10px">${sesCtl()}</div>${dirNote()}`;
+  let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><b style="flex:1">${esc(ses.name)}</b><span style="color:var(--mut);font-size:13px">${(((ses.total-queue.length-(ses.rot||0))%ses.total)+ses.total)%ses.total+1} / ${ses.total}</span>${nx?`<button class="sm" style="margin:0;color:var(--r1)" onclick="retry()">❌ 잊은 카드 다시 학습 (${nx})</button>`:""}<button class="sm" style="margin:0" onclick="endSes()">종료</button></div><div class="ctl" style="margin-bottom:10px">${sesCtl()}</div>${dirNote()}`;
   if(eid===c.id){$("#view").innerHTML=h+`<div class="box">${editForm(c)}</div>`;return}
   h+=`<div class="box"><div style="text-align:right"><button class="sm" style="margin:0" onclick="eid=${c.id};render()">✎ 편집</button></div><div class="stage"><div class="face" style="font-size:${c.fs||22}px">${richHtml(c.front,c.fr)}</div><div class="face back" style="font-size:${c.fs||22}px;visibility:${shown?"visible":"hidden"}">${richHtml(c.back,c.br)}</div></div><div class="act${ses.pl?(shown?" act4":" act2"):""}">${ses.pl?(!shown?`<button class="b4" onclick="back()" ${canBack?"":"disabled"}>◀ 이전</button><button class="b4" onclick="shown=true;render()">정답 보기</button>`:`<button class="b4" onclick="back()">◀ 이전</button><button class="b3" onclick="mark(true)">쉬움</button><button class="b1" onclick="mark(false)">어려움</button><button class="b4" onclick="skip()">다음 ▶</button>`):!shown?`<span></span><button class="b4" onclick="shown=true;render()">정답 보기</button>`:ses.view?`<span></span><button class="b4" onclick="nxt()">다음 ▶</button>`:`<button class="b1" onclick="mark(false)">❌ 어려움</button><button class="b3" onclick="mark(true)">⭕ 쉬움</button>`}</div>`;
   $("#view").innerHTML=h+`</div>`
