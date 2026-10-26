@@ -111,7 +111,7 @@ main.wide{max-width:960px}
 .sq-res button{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px dashed rgba(234,179,8,.5);padding:6px 2px;color:var(--fg);font:inherit;font-size:13px;cursor:pointer}
 .sq-res button:first-of-type{border-top:0}
 .sq-res button.on{font-weight:700}
-background:rgba(125,211,252,.38);box-shadow:inset 4px 0 0 #38bdf8}
+.item.pnew{background:rgba(125,211,252,.38);box-shadow:inset 4px 0 0 #38bdf8}
 .item.ptarget{box-shadow:inset 0 -4px 0 var(--ac);background:rgba(59,110,245,.07)}
 .item.psel{background:rgba(59,110,245,.10);box-shadow:inset 3px 0 0 var(--ac)}
 .pctip{display:none;margin:0 0 10px;font-size:12px;color:var(--mut)}@media (hover:hover) and (pointer:fine){.pctip{display:block}}
@@ -258,7 +258,22 @@ function start(name,home){
   if(!l.length){alert(pk?(S.pick.length?"선택 카드 중 지금 설정한 방향(한→영/영→한)에 맞는 카드가 없어요.":"카드 목록에서 학습할 카드를 먼저 선택해 주세요."):name===LIST?"체크된 폴더에 학습할 카드가 없어요. (폴더 체크와 방향 설정을 확인해 보세요)":name===XF?(cards.some(c=>c.deck===XF)?"잊은 카드 중 지금 설정한 방향에 맞는 카드가 없어요.":"잊은 카드가 아직 없어요."):name===LF?"학습중 폴더가 비어 있어요. 카드 목록에서 카드를 골라 '학습중으로 보내기'를 눌러 주세요.":"학습할 카드가 없어요. (방향 설정을 확인해 보세요)");return}
   l=o.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5);
   queue=l.map(c=>c.id);shown=false;eid=null;
-  ses={name:name===LIST?"📋 학습 목록":name===ALL?"📚 전체":name===PL?"📖 선택 카드":name===LF?"📖 학습중":pk?"✅ 선택 카드":name===XF?"❌ 잊음"+(home?" · "+home:""):"📁 "+name,total:queue.length,o:0,x:0,from:name,home,view:name===LF,pl:true,loop:true,round:1,opt:o,done:[],xs:[]};render()
+  const rk=(name===PL?"PL":String(name))+(home?"|"+home:""),canRes=name!==LF;
+  let rs=canRes&&(S.resume||{})[rk],pre=null;
+  if(rs&&rs.opt&&rs.opt.order===o.order&&rs.opt.dir===o.dir){
+    const inL=new Set(queue),allS=new Set(rs.all||[]);
+    const rest=(rs.rest||[]).filter(id=>inL.has(id)),fresh=queue.filter(id=>!allS.has(id)),pos0=Math.max(0,(rs.total||0)-(rs.rest||[]).length);
+    if(rest.length&&pos0>0){
+      const nc=cards.find(c=>c.id===rest[0]);
+      if(confirm("이전에 "+pos0+"번째 카드까지 공부했어요.\n다음 카드: "+(nc?nc.front.split("\n")[0]:"")+"\n\n[확인] "+(pos0+1)+"번째 카드부터 이어서 공부\n[취소] 처음부터 다시 공부"))pre={rest:[...rest,...fresh],pos0,all:[...new Set([...(rs.all||[]),...queue])],rs};
+    }
+  }
+  if(!pre&&rs){delete S.resume[rk];save()}
+  const allIds=pre?pre.all:queue.slice();
+  if(pre)queue=pre.rest;
+  ses={rk:canRes?rk:null,allIds,name:name===LIST?"📋 학습 목록":name===ALL?"📚 전체":name===PL?"📖 선택 카드":name===LF?"📖 학습중":pk?"✅ 선택 카드":name===XF?"❌ 잊음"+(home?" · "+home:""):"📁 "+name,total:queue.length,o:0,x:0,from:name,home,view:name===LF,pl:true,loop:true,round:1,opt:o,done:[],xs:[]};
+  if(pre){ses.total=pre.pos0+queue.length;ses.round=pre.rs.round||1;ses.o=pre.rs.o||0;ses.x=pre.rs.x||0;ses.done=(pre.rs.done||[]).slice();ses.xs=(pre.rs.xs||[]).slice()}
+  render()
 }
 function go(i){start(FL[i][0],FL[i][1])}
 function srcCards(){
@@ -269,13 +284,19 @@ function srcCards(){
   if(f===XF){const l=cards.filter(c=>c.deck===XF&&(!ses.home||(c.home||"기본")===ses.home));return ses.only?l.filter(c=>ses.only.includes(c.id)):l}
   return cards.filter(c=>c.deck===f)
 }
+function saveRes(){
+  if(!ses||!ses.rk)return;
+  S.resume=S.resume||{};
+  if(!queue.length){delete S.resume[ses.rk];return}
+  S.resume[ses.rk]={opt:{order:ses.opt.order,dir:ses.opt.dir},all:ses.allIds,rest:queue.slice(),total:ses.total,round:ses.round,o:ses.o,x:ses.x,done:ses.done.slice(),xs:ses.xs.slice(),t:Date.now()}
+}
 function nxt(){
   const prev=queue[0];queue.shift();shown=false;eid=null;
   if(!queue.length&&ses&&ses.loop){
     let l=srcCards().filter(c=>dirOk(c,ses.opt.dir)&&!ses.done.includes(c.id));
     if(l.length){queue=(ses.opt.order==="seq"?l.sort(canonCmp()):l.sort(()=>Math.random()-.5)).map(c=>c.id);if(queue.length>1&&queue[0]===prev)queue.push(queue.shift());ses.total=queue.length;ses.rot=0;ses.round++}
   }
-  render()
+  saveRes();save();render()
 }
 function endSes(){ses=null;queue=[];eid=null;render()}
 function hpush(extra){
@@ -288,7 +309,7 @@ function back(){
   if(!ses)return;
   if(shown){shown=false;render();return}
   const h=ses.hist&&ses.hist.pop();
-  if(!h){if(queue.length>1){queue.unshift(queue.pop());ses.rot=(ses.rot||0)+1;shown=false;eid=null;render()}return}
+  if(!h){if(queue.length>1){queue.unshift(queue.pop());ses.rot=(ses.rot||0)+1;shown=false;eid=null;saveRes();save();render()}return}
   const restore=(cur,snap)=>{if(!cur)return;Object.keys(cur).forEach(k=>delete cur[k]);Object.assign(cur,snap);cur.upd=Date.now()};
   if(h.cs){
     let c=cards.find(x=>x.id===h.cs.id);
@@ -297,7 +318,7 @@ function back(){
     if(h.ds)restore(cards.find(x=>x.id===h.ds.id),h.ds)
   }
   ses.xs.length=h.xs;ses.done.length=h.dn;ses.o=h.o;ses.x=h.x;ses.round=h.round;ses.total=h.total;ses.rot=h.rot||0;
-  queue=h.queue;S.pick=h.pick;shown=true;eid=null;save();render()
+  queue=h.queue;S.pick=h.pick;shown=true;eid=null;saveRes();save();render()
 }
 function mark(ok){
   const c=cards.find(x=>x.id===queue[0]);if(!c)return;
@@ -308,7 +329,7 @@ function mark(ok){
     if(dup){hs.ds={...dup};ses.xs.push(dup.id);dup.st="x";dup.upd=Date.now();if(S.pick.includes(c.id)&&!S.pick.includes(dup.id))S.pick.push(dup.id);S.pick=S.pick.filter(i=>i!==c.id);S.dead[c.id]=Date.now();cards=cards.filter(x=>x!==c)}
     else{c.deck=XF;ses.xs.push(c.id)}}
   c.last=Date.now();c.upd=c.last;ses[ok?"o":"x"]++;ses.done.push(c.id);
-  save();nxt()
+  nxt()
 }
 const SZ2N={16:1,19:2,26:4,32:5},N2SZ={1:16,2:19,3:22,4:26,5:32};
 const edHtml=(t,runs)=>(runs||[[t,null]]).map(([x,z])=>{const h=esc(x).replace(/\n/g,"<br>");return z&&SZ2N[z]?`<font size="${SZ2N[z]}">${h}</font>`:h}).join("");
