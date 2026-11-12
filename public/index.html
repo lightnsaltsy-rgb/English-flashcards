@@ -128,7 +128,7 @@ main.wide{max-width:960px}
 <nav id="nav"></nav>
 <div id="sync" onclick="openSync()"></div>
 <div id="view"></div>
-<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v20 (같은 영어 문장 표시)</p>
+<p style="text-align:center;color:var(--mut);font-size:11px;margin:18px 0 6px">버전 2026-10-07 · v21 (영어 음성)</p>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -298,7 +298,7 @@ function nxt(){
   }
   saveRes();save();render()
 }
-function endSes(){ses=null;queue=[];eid=null;render()}
+function endSes(){ses=null;queue=[];eid=null;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}render()}
 function hpush(extra){
   ses.hist=ses.hist||[];
   const h={id:queue[0],queue:queue.slice(),round:ses.round,total:ses.total,rot:ses.rot||0,xs:ses.xs.length,dn:ses.done.length,o:ses.o,x:ses.x,pick:S.pick.slice(),...extra};
@@ -439,6 +439,67 @@ function vDone(){
   const s=ses,again=s.xs&&s.xs.length?`<button class="big" style="margin-top:8px" onclick="retry()">❌ 잊은 카드만 바로 다시 학습 (${s.xs.length}장)</button>`:"";
   $("#view").innerHTML=`<div class="box empty" style="padding:24px"><div style="font-size:20px;margin-bottom:6px">🎉 끝났어요!</div>${s.view?"":`⭕ ${s.o}장 · ❌ ${s.x}장`}</div>${again}<button class="sm" style="width:100%;margin:8px 0 0;padding:12px" onclick="endSes()">폴더 목록으로</button>`
 }
+
+// ===== 영어 음성 (브라우저 내장 음성 · 미국 영어 여성 음성 중 가장 자연스러운 것을 자동 선택) =====
+const TTS={
+  get(){try{return {voice:"",rate:.95,auto:false,...JSON.parse(localStorage.getItem("srs-tts")||"{}")}}catch(e){return {voice:"",rate:.95,auto:false}}},
+  set(o){try{localStorage.setItem("srs-tts",JSON.stringify({...TTS.get(),...o}))}catch(e){}}
+};
+let LASTKEY="";
+const TTS_MALE=/\b(david|mark|guy|alex|fred|daniel|tom|aaron|arthur|george|james|ryan|brian|eric|matthew|christopher|roger|steffan|thomas|male)\b/i;
+const TTS_PREF=["aria","jenny","ava","emma","michelle","samantha","allison","joanna","kendra","kimberly","salli","zira","nicky","google us english","susan"];
+const enVoices=()=>window.speechSynthesis?speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)):[];
+function vScore(v){
+  if(TTS_MALE.test(v.name))return -1;
+  const n=v.name.toLowerCase(),pi=TTS_PREF.findIndex(p=>n.includes(p));
+  let sc=0;if(pi>=0)sc+=50-pi;if(/natural|neural|online|premium|enhanced/i.test(v.name))sc+=40;if(/^en[-_]us$/i.test(v.lang))sc+=100;
+  return sc
+}
+function pickVoice(){
+  const vs=enVoices();if(!vs.length)return null;
+  const st=TTS.get().voice;if(st){const f=vs.find(v=>v.voiceURI===st||v.name===st);if(f)return f}
+  let best=null,bs=-2;for(const v of vs){const sc=vScore(v);if(sc>bs){bs=sc;best=v}}
+  return best
+}
+function ttsText(c){
+  const t=isKo(c)?c.back:c.front;
+  return String(t).replace(/\([^)]*[가-힣][^)]*\)/g," ").replace(/[가-힣ㄱ-ㅎㅏ-ㅣ]+/g," ").replace(/\s+/g," ").trim()
+}
+function speakText(t){
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){alert("이 브라우저는 음성 읽기를 지원하지 않아요. (크롬, 엣지, 사파리를 써 보세요)");return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t),v=pickVoice();
+  if(v){u.voice=v;u.lang=v.lang}else u.lang="en-US";
+  u.rate=TTS.get().rate;u.pitch=1;
+  setTimeout(()=>speechSynthesis.speak(u),30)
+}
+function speakCur(){
+  const c=ses&&cards.find(x=>x.id===queue[0]);if(!c)return;
+  const t=ttsText(c);if(!t){alert("읽을 영어 문장이 없어요.");return}
+  if(isKo(c)&&!shown){shown=true;LASTKEY=c.id+"|true";render()}   // 한→영 카드는 정답(영어)을 보여 준 뒤 읽어요
+  speakText(t)
+}
+function ttsDlg(){
+  const m=document.createElement("div");m.className="dlg";
+  const vs=enVoices().slice().sort((a,b)=>vScore(b)-vScore(a)),cur=pickVoice(),st=TTS.get();
+  const opts=vs.map((v,i)=>`<option value="${esc(v.voiceURI||v.name)}" ${cur&&(v.voiceURI===cur.voiceURI&&v.name===cur.name)?"selected":""}>${i===0&&vScore(v)>0?"⭐ ":""}${esc(v.name)} (${esc(v.lang)})</option>`).join("");
+  m.innerHTML=`<div class="dbox"><b>🔊 영어 음성 설정</b>
+  <label style="margin-top:10px">음성 ${vs.length?"":"(목록을 불러오는 중이에요. 잠시 뒤에 다시 열어 주세요)"}</label>
+  <select id="ttsv">${opts}</select>
+  <label style="margin-top:10px">속도 <span id="ttsrv">${st.rate.toFixed(2)}</span></label>
+  <input id="ttsr" type="range" min="0.6" max="1.2" step="0.05" value="${st.rate}" style="width:100%">
+  <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--fg);margin:10px 0"><input id="ttsa" type="checkbox" class="ck" style="width:18px;height:18px" ${st.auto?"checked":""}>영어가 화면에 보이면 자동으로 읽어주기</label>
+  <div class="row" style="margin-top:6px"><button class="b4" id="ttst">▶ 들어보기</button><button class="b4" id="ttsx">닫기</button></div>
+  <p style="margin:10px 0 0;font-size:12px;color:var(--mut)">음성은 기기에 설치된 것만 고를 수 있어요. 더 자연스럽게 들으려면<br>· 윈도우 엣지: <b>Microsoft Aria Online (Natural)</b><br>· 아이폰·아이패드: 설정 → 손쉬운 사용 → 음성 콘텐츠 → 음성 → 영어 → <b>Ava(프리미엄)</b> 또는 <b>Samantha(향상됨)</b> 내려받기</p></div>`;
+  document.body.appendChild(m);
+  const q=id=>m.querySelector(id);
+  q("#ttsv").onchange=e=>TTS.set({voice:e.target.value});
+  q("#ttsr").oninput=e=>{q("#ttsrv").textContent=(+e.target.value).toFixed(2);TTS.set({rate:+e.target.value})};
+  q("#ttsa").onchange=e=>TTS.set({auto:e.target.checked});
+  q("#ttst").onclick=()=>speakText("Hey, how's it going? I'm really glad you stopped by.");
+  q("#ttsx").onclick=()=>{m.remove();try{speechSynthesis.cancel()}catch(e){}}
+}
+if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}   // 음성 목록 미리 불러오기
 function vStudy(){
   if(!ses)return vFolders();
   const c=cards.find(x=>x.id===queue[0]);
@@ -447,8 +508,11 @@ function vStudy(){
   const nx=ses.only?0:(ses.xs||[]).filter(id=>cards.some(x=>x.id===id&&x.deck===XF)).length;
   let h=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><b style="flex:1">${esc(ses.name)}</b><span style="color:var(--mut);font-size:13px">${(((ses.total-queue.length-(ses.rot||0))%ses.total)+ses.total)%ses.total+1} / ${ses.total}</span>${nx?`<button class="sm" style="margin:0;color:var(--r1)" onclick="retry()">❌ 잊은 카드 다시 학습 (${nx})</button>`:""}<button class="sm" style="margin:0" onclick="endSes()">종료</button></div><div class="ctl" style="margin-bottom:10px">${sesCtl()}</div>${dirNote()}`;
   if(eid===c.id){$("#view").innerHTML=h+`<div class="box">${editForm(c)}</div>`;return}
-  h+=`<div class="box"><div style="text-align:right"><button class="sm" style="margin:0" onclick="eid=${c.id};render()">✎ 편집</button></div><div class="stage"><div class="face" style="font-size:${c.fs||22}px">${richHtml(c.front,c.fr)}</div><div class="face back" style="font-size:${c.fs||22}px;visibility:${shown?"visible":"hidden"}">${richHtml(c.back,c.br)}</div></div><div class="act${ses.pl?(shown?" act4":" act2"):""}">${ses.pl?(!shown?`<button class="b4" onclick="back()" ${canBack?"":"disabled"}>◀ 이전</button><button class="b4" onclick="shown=true;render()">정답 보기</button>`:`<button class="b4" onclick="back()">◀ 이전</button><button class="b3" onclick="mark(true)">쉬움</button><button class="b1" onclick="mark(false)">어려움</button><button class="b4" onclick="skip()">다음 ▶</button>`):!shown?`<span></span><button class="b4" onclick="shown=true;render()">정답 보기</button>`:ses.view?`<span></span><button class="b4" onclick="nxt()">다음 ▶</button>`:`<button class="b1" onclick="mark(false)">❌ 어려움</button><button class="b3" onclick="mark(true)">⭕ 쉬움</button>`}</div>`;
-  $("#view").innerHTML=h+`</div>`
+  h+=`<div class="box"><div style="display:flex;gap:6px;align-items:center"><button class="sm" style="margin:0;background:var(--ac);color:#fff;border-color:var(--ac)" onclick="speakCur()" title="영어 문장 듣기">🔊 듣기</button><button class="sm" style="margin:0" onclick="ttsDlg()" title="음성 설정">⚙️</button><span style="flex:1"></span><button class="sm" style="margin:0" onclick="eid=${c.id};render()">✎ 편집</button></div><div class="stage"><div class="face" style="font-size:${c.fs||22}px">${richHtml(c.front,c.fr)}</div><div class="face back" style="font-size:${c.fs||22}px;visibility:${shown?"visible":"hidden"}">${richHtml(c.back,c.br)}</div></div><div class="act${ses.pl?(shown?" act4":" act2"):""}">${ses.pl?(!shown?`<button class="b4" onclick="back()" ${canBack?"":"disabled"}>◀ 이전</button><button class="b4" onclick="shown=true;render()">정답 보기</button>`:`<button class="b4" onclick="back()">◀ 이전</button><button class="b3" onclick="mark(true)">쉬움</button><button class="b1" onclick="mark(false)">어려움</button><button class="b4" onclick="skip()">다음 ▶</button>`):!shown?`<span></span><button class="b4" onclick="shown=true;render()">정답 보기</button>`:ses.view?`<span></span><button class="b4" onclick="nxt()">다음 ▶</button>`:`<button class="b1" onclick="mark(false)">❌ 어려움</button><button class="b3" onclick="mark(true)">⭕ 쉬움</button>`}</div>`;
+  $("#view").innerHTML=h+`</div>`;
+  const key=c.id+"|"+shown;
+  if(LASTKEY!==key){LASTKEY=key;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}
+    if(TTS.get().auto&&(!isKo(c)||shown)){const t=ttsText(c);if(t)speakText(t)}}
 }
 function vAdd(){
   const fs=folders();
